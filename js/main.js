@@ -1274,3 +1274,123 @@ function showInAppNotification(title, body) {
   }, 5000);
 }
 
+// ==========================================
+// YouTube BGM 制御
+// ==========================================
+let ytPlayer;
+let ytReady = false;
+
+window.onYouTubeIframeAPIReady = function() {
+  ytReady = true;
+  initBgm();
+};
+
+function initBgm() {
+  if (!ytReady) return;
+  const urlOrId = localStorage.getItem('bgmYoutubeUrl') || '';
+  const isEnabled = localStorage.getItem('bgmEnabled') === 'true';
+  const videoId = extractYoutubeId(urlOrId);
+  
+  if (videoId && isEnabled) {
+    playYoutubeBgm(videoId);
+  }
+}
+
+function extractYoutubeId(url) {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  if (match && match[2].length === 11) {
+    return match[2];
+  }
+  if (url.length === 11) {
+    return url;
+  }
+  return null;
+}
+
+function playYoutubeBgm(videoId) {
+  if (ytPlayer && ytPlayer.loadVideoById) {
+    ytPlayer.loadVideoById({
+      videoId: videoId
+    });
+  } else {
+    ytPlayer = new YT.Player('youtubePlayer', {
+      height: '0',
+      width: '0',
+      videoId: videoId,
+      playerVars: {
+        'autoplay': 1,
+        'loop': 1,
+        'playlist': videoId,
+        'controls': 0
+      },
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange
+      }
+    });
+  }
+}
+
+function onPlayerReady(event) {
+  event.target.setVolume(30);
+  event.target.playVideo();
+}
+
+function onPlayerStateChange(event) {
+  if (event.data === YT.PlayerState.ENDED) {
+    event.target.playVideo();
+  }
+}
+
+function stopYoutubeBgm() {
+  if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
+    ytPlayer.pauseVideo();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const bgmToggle = document.getElementById('bgmToggle');
+  const bgmUrl = document.getElementById('bgmYoutubeUrl');
+  
+  if (bgmToggle && bgmUrl) {
+    bgmToggle.checked = localStorage.getItem('bgmEnabled') === 'true';
+    bgmUrl.value = localStorage.getItem('bgmYoutubeUrl') || '';
+    
+    bgmToggle.addEventListener('change', (e) => {
+      localStorage.setItem('bgmEnabled', e.target.checked);
+      if (e.target.checked) {
+        const videoId = extractYoutubeId(bgmUrl.value);
+        if (videoId) {
+          playYoutubeBgm(videoId);
+        } else {
+          alert('有効なYouTubeのURLまたはIDを入力してください。');
+          e.target.checked = false;
+          localStorage.setItem('bgmEnabled', false);
+        }
+      } else {
+        stopYoutubeBgm();
+      }
+    });
+    
+    bgmUrl.addEventListener('change', (e) => {
+      localStorage.setItem('bgmYoutubeUrl', e.target.value);
+      if (bgmToggle.checked) {
+        const videoId = extractYoutubeId(e.target.value);
+        if (videoId) playYoutubeBgm(videoId);
+      }
+    });
+  }
+  
+  document.body.addEventListener('click', () => {
+    const isEnabled = localStorage.getItem('bgmEnabled') === 'true';
+    if (isEnabled && ytPlayer && ytPlayer.getPlayerState) {
+      const state = ytPlayer.getPlayerState();
+      if (state !== YT.PlayerState.PLAYING && state !== YT.PlayerState.BUFFERING) {
+        ytPlayer.playVideo();
+      }
+    }
+  }, { once: true });
+});
+
