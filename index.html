@@ -250,6 +250,14 @@
             <span>AIフィードバック</span>
             <label class="switch"><input type="checkbox"><span class="slider"></span></label>
           </div>
+          <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 10px; border-top: 1px solid var(--border-subtle); padding-top: 15px; margin-top: 5px;">
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+              <span>BGM再生 (YouTube連携)</span>
+              <label class="switch"><input type="checkbox" id="bgmToggle"><span class="slider"></span></label>
+            </div>
+            <input type="text" id="bgmYoutubeUrl" class="cyber-input" style="width: 100%; box-sizing: border-box; font-size: 0.8rem; padding: 8px;" placeholder="YouTubeのURLまたは動画ID">
+            <span style="font-size: 0.7rem; color: var(--text-muted);">※ブラウザの仕様上、画面をタップした後に再生開始されます</span>
+          </div>
           <div class="setting-item" style="color: #ef4444;" id="logoutButton">
             ログアウト
           </div>
@@ -327,10 +335,14 @@
     </nav>
   </div>
 
-  <script src="js/main.js?v=24"></script>
+  <!-- BGMプレイヤー用 -->
+  <div id="youtubePlayer" style="display:none;"></div>
+
+  <script src="js/main.js?v=25"></script>
   <!-- Google API Scripts -->
   <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
   <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
-  <script src="js/google_api.js?v=24"></script>
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="js/google_api.js?v=25"></script>
 </body>
 </html>
