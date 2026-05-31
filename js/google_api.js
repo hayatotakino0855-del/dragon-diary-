@@ -503,7 +503,7 @@ function openDiaryDetailModal(diary) {
   const overlay = document.createElement('div');
   overlay.className = 'diary-detail-overlay tag-edit-overlay';
   overlay.innerHTML = `
-    <div class="tag-edit-modal" style="max-width: 600px; width: 95%; height: 85vh; display: flex; flex-direction: column;">
+    <div class="tag-edit-modal" style="width: 100%; height: 100dvh; max-width: none; border-radius: 0; border: none; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; background: var(--bg-card); overflow: hidden;">
       <div id="detailViewMode" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
         <h3 style="font-size: 1.2rem; margin-bottom: 5px; flex-shrink: 0;">${displayTitle}</h3>
         <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; flex-shrink: 0;">${dateStr}</div>
@@ -515,18 +515,18 @@ function openDiaryDetailModal(diary) {
           <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">タグ</div>
           <div style="display:flex; gap:6px; flex-wrap:wrap; min-height: 24px;">${tagHtml || '<span style="color:var(--text-muted); font-size:0.8rem;">なし</span>'}</div>
         </div>
-        <div style="display: flex; gap: 10px; flex-shrink: 0;">
-          <button class="cyber-button" id="detailEditContentBtn" style="flex: 1; padding: 10px; background: rgba(0,240,255,0.1);">内容を編集</button>
-          <button class="cyber-button" id="detailEditTagBtn" style="flex: 1; padding: 10px;">タグを編集</button>
-          <button class="tag-edit-close" id="detailCloseBtn" style="flex: 1; margin: 0;">閉じる</button>
+        <div style="display: flex; gap: 10px; flex-shrink: 0; padding-bottom: max(env(safe-area-inset-bottom), 10px);">
+          <button class="cyber-button" id="detailEditContentBtn" style="flex: 1; padding: 12px; background: rgba(0,240,255,0.1);">内容を編集</button>
+          <button class="cyber-button" id="detailEditTagBtn" style="flex: 1; padding: 12px;">タグを編集</button>
+          <button class="tag-edit-close" id="detailCloseBtn" style="flex: 1; margin: 0; padding: 12px;">閉じる</button>
         </div>
       </div>
-      <div id="detailEditMode" style="display: none; flex-direction: column; flex: 1; height: 100%;">
-        <input type="text" id="editDiaryTitle" class="form-input" value="${diary.summary || ''}" style="margin-bottom: 10px; flex-shrink: 0;" placeholder="タイトル">
-        <textarea id="editDiaryDesc" class="form-textarea" style="flex: 1; margin-bottom: 15px; font-family: var(--font-body); resize: none;">${diary.description || ''}</textarea>
-        <div style="display: flex; gap: 10px; flex-shrink: 0;">
-          <button class="cyber-button" id="detailSaveBtn" style="flex: 1; padding: 10px; background: rgba(16,185,129,0.2); border-color: #10b981; color: #6ee7b7;">保存</button>
-          <button class="tag-edit-close" id="detailCancelEditBtn" style="flex: 1; margin: 0;">キャンセル</button>
+      <div id="detailEditMode" style="display: none; flex-direction: column; flex: 1; height: 100%; overflow: hidden;">
+        <input type="text" id="editDiaryTitle" value="${diary.summary || ''}" style="margin-bottom: 10px; flex-shrink: 0; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 12px; border-radius: 8px; font-size: 1rem; width: 100%; box-sizing: border-box;" placeholder="タイトル">
+        <textarea id="editDiaryDesc" style="flex: 1; margin-bottom: 15px; font-family: var(--font-body); resize: none; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 12px; border-radius: 8px; font-size: 1rem; width: 100%; box-sizing: border-box; line-height: 1.5;">${diary.description || ''}</textarea>
+        <div style="display: flex; gap: 10px; flex-shrink: 0; padding-bottom: max(env(safe-area-inset-bottom), 10px);">
+          <button class="cyber-button" id="detailSaveBtn" style="flex: 1; padding: 12px; background: rgba(16,185,129,0.2); border-color: #10b981; color: #6ee7b7;">保存</button>
+          <button class="tag-edit-close" id="detailCancelEditBtn" style="flex: 1; margin: 0; padding: 12px;">キャンセル</button>
         </div>
       </div>
     </div>
