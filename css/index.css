@@ -1211,6 +1211,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 /* --- 検索バー --- */
 .diary-search-bar {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 10px;
 }
@@ -1239,7 +1240,9 @@ input:checked + .slider:before { transform: translateX(20px); }
   font-family: var(--font-body);
   color-scheme: dark;
   outline: none;
-  min-width: 130px;
+  min-width: 100px;
+  max-width: 40%;
+  flex: 0 0 auto;
 }
 .date-filter-input:focus {
   border-color: var(--accent-cyan);

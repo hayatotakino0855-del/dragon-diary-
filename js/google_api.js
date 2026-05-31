@@ -315,7 +315,8 @@ function syncPlayerStats() {
   // UIの更新 (IDが存在する場合)
   // 総合魔力はgainExp内で更新されるためここでは処理しない
   const elDays = document.getElementById('displayTotalDays');
-  if (elDays) elDays.innerHTML = `${totalDays}<span class="habit-unit">日</span>`;
+  const unlocked = JSON.parse(localStorage.getItem('unlockedAchievements') || '[]');
+  if (elDays) elDays.innerHTML = `${unlocked.length}<span class="habit-unit">個</span>`;
   
   const elStreak = document.getElementById('displayStreakDays');
   if (elStreak) elStreak.innerHTML = `🔥${streak}<span class="habit-unit">日</span>`;
@@ -387,10 +388,23 @@ function renderCurrentPage() {
 
     const dateObj = new Date(diary.start.date);
     const dateStr = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
-    const title = diary.summary || '無題';
+    let title = diary.summary || '無題';
     const desc = diary.description || '';
     let preview = desc.replace(/\n/g, ' ');
     if (preview.length > 50) preview = preview.substring(0, 50) + '...';
+
+    // 検索ワードのハイライト処理
+    const searchInput = document.getElementById('diarySearchInput');
+    const searchWord = searchInput ? searchInput.value.trim() : '';
+    if (searchWord) {
+      // 正規表現エスケープ
+      const escaped = searchWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escaped})`, 'gi');
+      const highlight = `<mark style="background: transparent; border-bottom: 3px solid var(--accent-cyan); color: inherit;">$1</mark>`;
+      // 置換（プレビュー用）
+      title = title.replace(regex, highlight);
+      preview = preview.replace(regex, highlight);
+    }
 
     // タグバッジ
     const diaryTags = assignments[diary.id] || [];
@@ -470,19 +484,30 @@ function openDiaryDetailModal(diary) {
   overlay.className = 'diary-detail-overlay tag-edit-overlay';
   overlay.innerHTML = `
     <div class="tag-edit-modal" style="max-width: 500px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
-      <h3 style="font-size: 1.2rem; margin-bottom: 5px;">${title}</h3>
-      <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">${dateStr}</div>
-      <div style="flex: 1; overflow-y: auto; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem;">
-        ${formattedDesc}
-        ${photoUrl ? `<div style="margin-top: 15px;"><a href="${photoUrl}" target="_blank" style="color: var(--accent-blue); text-decoration: underline;">添付写真を見る (Google Drive)</a></div>` : ''}
+      <div id="detailViewMode">
+        <h3 style="font-size: 1.2rem; margin-bottom: 5px;">${title}</h3>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">${dateStr}</div>
+        <div style="flex: 1; overflow-y: auto; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem;">
+          ${formattedDesc}
+          ${photoUrl ? `<div style="margin-top: 15px;"><a href="${photoUrl}" target="_blank" style="color: var(--accent-blue); text-decoration: underline;">添付写真を見る (Google Drive)</a></div>` : ''}
+        </div>
+        <div style="margin-bottom: 15px;">
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">タグ</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; min-height: 24px;">${tagHtml || '<span style="color:var(--text-muted); font-size:0.8rem;">なし</span>'}</div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="cyber-button" id="detailEditContentBtn" style="flex: 1; padding: 10px; background: rgba(0,240,255,0.1);">内容を編集</button>
+          <button class="cyber-button" id="detailEditTagBtn" style="flex: 1; padding: 10px;">タグを編集</button>
+          <button class="tag-edit-close" id="detailCloseBtn" style="flex: 1; margin: 0;">閉じる</button>
+        </div>
       </div>
-      <div style="margin-bottom: 15px;">
-        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">タグ</div>
-        <div style="display:flex; gap:6px; flex-wrap:wrap; min-height: 24px;">${tagHtml || '<span style="color:var(--text-muted); font-size:0.8rem;">なし</span>'}</div>
-      </div>
-      <div style="display: flex; gap: 10px;">
-        <button class="cyber-button" id="detailEditTagBtn" style="flex: 1; padding: 10px;">タグを編集</button>
-        <button class="tag-edit-close" id="detailCloseBtn" style="flex: 1; margin: 0;">閉じる</button>
+      <div id="detailEditMode" style="display: none; flex-direction: column; flex: 1;">
+        <input type="text" id="editDiaryTitle" class="form-input" value="${diary.summary || ''}" style="margin-bottom: 10px;" placeholder="タイトル">
+        <textarea id="editDiaryDesc" class="form-textarea" style="flex: 1; min-height: 200px; margin-bottom: 15px; font-family: var(--font-body);">${diary.description || ''}</textarea>
+        <div style="display: flex; gap: 10px;">
+          <button class="cyber-button" id="detailSaveBtn" style="flex: 1; padding: 10px; background: rgba(16,185,129,0.2); border-color: #10b981; color: #6ee7b7;">保存</button>
+          <button class="tag-edit-close" id="detailCancelEditBtn" style="flex: 1; margin: 0;">キャンセル</button>
+        </div>
       </div>
     </div>
   `;
@@ -494,6 +519,54 @@ function openDiaryDetailModal(diary) {
   document.getElementById('detailEditTagBtn').addEventListener('click', () => {
     overlay.remove();
     openTagEditModal(diary.id, title);
+  });
+  
+  // 編集モードへの切り替え
+  document.getElementById('detailEditContentBtn').addEventListener('click', () => {
+    document.getElementById('detailViewMode').style.display = 'none';
+    document.getElementById('detailEditMode').style.display = 'flex';
+  });
+
+  // 編集キャンセル
+  document.getElementById('detailCancelEditBtn').addEventListener('click', () => {
+    document.getElementById('detailEditMode').style.display = 'none';
+    document.getElementById('detailViewMode').style.display = 'block';
+  });
+
+  // 保存処理
+  document.getElementById('detailSaveBtn').addEventListener('click', async () => {
+    const newTitle = document.getElementById('editDiaryTitle').value.trim() || '無題';
+    const newDesc = document.getElementById('editDiaryDesc').value;
+    const saveBtn = document.getElementById('detailSaveBtn');
+    saveBtn.textContent = '保存中...';
+    saveBtn.disabled = true;
+
+    try {
+      // カレンダーからイベント取得
+      const eventRes = await gapi.client.calendar.events.get({
+        calendarId: 'primary',
+        eventId: diary.id
+      });
+      const eventData = eventRes.result;
+      eventData.summary = newTitle;
+      eventData.description = newDesc;
+
+      // 更新
+      await gapi.client.calendar.events.update({
+        calendarId: 'primary',
+        eventId: diary.id,
+        resource: eventData
+      });
+
+      overlay.remove();
+      // 再取得して画面更新
+      fetchDiariesFromCalendar();
+    } catch (e) {
+      console.error(e);
+      alert('保存に失敗しました。');
+      saveBtn.textContent = '保存';
+      saveBtn.disabled = false;
+    }
   });
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) overlay.remove();
@@ -566,6 +639,20 @@ function renderTagFilters() {
   if (!container) return;
   container.innerHTML = '';
   const tags = getTags();
+
+  // 「すべて」ボタン
+  const allBtn = document.createElement('span');
+  allBtn.className = 'tag-badge' + (activeTagFilter === null ? ' active' : '');
+  allBtn.style.background = 'rgba(255,255,255,0.1)';
+  allBtn.style.color = '#ffffff';
+  allBtn.textContent = 'すべて';
+  allBtn.addEventListener('click', () => {
+    activeTagFilter = null;
+    applyFilters();
+    renderTagFilters();
+  });
+  container.appendChild(allBtn);
+
   tags.forEach(tag => {
     const btn = document.createElement('span');
     btn.className = 'tag-badge' + (activeTagFilter === tag.name ? ' active' : '');
