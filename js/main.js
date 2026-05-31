@@ -111,7 +111,7 @@ function gainExp(amount) {
   }
 
   // 炎画像のクリップ
-  const flameImg = document.querySelector('.static-flame-img');
+  const flameImg = document.querySelector('.active-flame');
   if (flameImg) {
     let progress = currentExp / 10000;
     if (progress > 1) progress = 1;
