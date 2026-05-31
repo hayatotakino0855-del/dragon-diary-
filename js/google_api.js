@@ -391,19 +391,27 @@ function renderCurrentPage() {
     let title = diary.summary || '無題';
     const desc = diary.description || '';
     let preview = desc.replace(/\n/g, ' ');
-    if (preview.length > 50) preview = preview.substring(0, 50) + '...';
 
-    // 検索ワードのハイライト処理
+    // 検索ワードのハイライトとスニペット抽出
     const searchInput = document.getElementById('diarySearchInput');
     const searchWord = searchInput ? searchInput.value.trim() : '';
     if (searchWord) {
-      // 正規表現エスケープ
+      const matchIndex = preview.toLowerCase().indexOf(searchWord.toLowerCase());
+      if (matchIndex > -1) {
+        const start = Math.max(0, matchIndex - 15);
+        const end = Math.min(preview.length, matchIndex + searchWord.length + 30);
+        preview = (start > 0 ? '...' : '') + preview.substring(start, end) + (end < preview.length ? '...' : '');
+      } else {
+        if (preview.length > 50) preview = preview.substring(0, 50) + '...';
+      }
+
       const escaped = searchWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(`(${escaped})`, 'gi');
       const highlight = `<mark style="background: transparent; border-bottom: 3px solid var(--accent-cyan); color: inherit;">$1</mark>`;
-      // 置換（プレビュー用）
       title = title.replace(regex, highlight);
       preview = preview.replace(regex, highlight);
+    } else {
+      if (preview.length > 50) preview = preview.substring(0, 50) + '...';
     }
 
     // タグバッジ
@@ -463,8 +471,20 @@ function openDiaryDetailModal(diary) {
   }
   
   // 改行を <br> に変換
-  const formattedDesc = desc.replace(/\n/g, '<br>');
+  let formattedDesc = desc.replace(/\n/g, '<br>');
+  let displayTitle = title;
   
+  // 検索ワードのハイライト処理（詳細モーダル用）
+  const searchInput = document.getElementById('diarySearchInput');
+  const searchWord = searchInput ? searchInput.value.trim() : '';
+  if (searchWord) {
+    const escaped = searchWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escaped})`, 'gi');
+    const highlight = `<mark style="background: transparent; border-bottom: 3px solid var(--accent-cyan); color: inherit;">$1</mark>`;
+    displayTitle = displayTitle.replace(regex, highlight);
+    formattedDesc = formattedDesc.replace(regex, highlight);
+  }
+
   const dateObj = new Date(diary.start.date);
   const dateStr = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
 
@@ -483,28 +503,28 @@ function openDiaryDetailModal(diary) {
   const overlay = document.createElement('div');
   overlay.className = 'diary-detail-overlay tag-edit-overlay';
   overlay.innerHTML = `
-    <div class="tag-edit-modal" style="max-width: 500px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
-      <div id="detailViewMode">
-        <h3 style="font-size: 1.2rem; margin-bottom: 5px;">${title}</h3>
-        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">${dateStr}</div>
-        <div style="flex: 1; overflow-y: auto; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem;">
+    <div class="tag-edit-modal" style="max-width: 600px; width: 95%; height: 85vh; display: flex; flex-direction: column;">
+      <div id="detailViewMode" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+        <h3 style="font-size: 1.2rem; margin-bottom: 5px; flex-shrink: 0;">${displayTitle}</h3>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; flex-shrink: 0;">${dateStr}</div>
+        <div style="flex: 1; overflow-y: auto; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem; word-break: break-word;">
           ${formattedDesc}
           ${photoUrl ? `<div style="margin-top: 15px;"><a href="${photoUrl}" target="_blank" style="color: var(--accent-blue); text-decoration: underline;">添付写真を見る (Google Drive)</a></div>` : ''}
         </div>
-        <div style="margin-bottom: 15px;">
+        <div style="margin-bottom: 15px; flex-shrink: 0;">
           <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">タグ</div>
           <div style="display:flex; gap:6px; flex-wrap:wrap; min-height: 24px;">${tagHtml || '<span style="color:var(--text-muted); font-size:0.8rem;">なし</span>'}</div>
         </div>
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 10px; flex-shrink: 0;">
           <button class="cyber-button" id="detailEditContentBtn" style="flex: 1; padding: 10px; background: rgba(0,240,255,0.1);">内容を編集</button>
           <button class="cyber-button" id="detailEditTagBtn" style="flex: 1; padding: 10px;">タグを編集</button>
           <button class="tag-edit-close" id="detailCloseBtn" style="flex: 1; margin: 0;">閉じる</button>
         </div>
       </div>
-      <div id="detailEditMode" style="display: none; flex-direction: column; flex: 1;">
-        <input type="text" id="editDiaryTitle" class="form-input" value="${diary.summary || ''}" style="margin-bottom: 10px;" placeholder="タイトル">
-        <textarea id="editDiaryDesc" class="form-textarea" style="flex: 1; min-height: 200px; margin-bottom: 15px; font-family: var(--font-body);">${diary.description || ''}</textarea>
-        <div style="display: flex; gap: 10px;">
+      <div id="detailEditMode" style="display: none; flex-direction: column; flex: 1; height: 100%;">
+        <input type="text" id="editDiaryTitle" class="form-input" value="${diary.summary || ''}" style="margin-bottom: 10px; flex-shrink: 0;" placeholder="タイトル">
+        <textarea id="editDiaryDesc" class="form-textarea" style="flex: 1; margin-bottom: 15px; font-family: var(--font-body); resize: none;">${diary.description || ''}</textarea>
+        <div style="display: flex; gap: 10px; flex-shrink: 0;">
           <button class="cyber-button" id="detailSaveBtn" style="flex: 1; padding: 10px; background: rgba(16,185,129,0.2); border-color: #10b981; color: #6ee7b7;">保存</button>
           <button class="tag-edit-close" id="detailCancelEditBtn" style="flex: 1; margin: 0;">キャンセル</button>
         </div>
