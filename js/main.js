@@ -731,7 +731,45 @@ eggStyles.textContent = `
 document.head.appendChild(eggStyles);
 
 
-// ダブルタップでの姿変更は廃止（EXPに応じた姿のみ表示）
+// ダブルタップで解放済みの過去の姿に切り替え
+let lastTapTime = 0;
+
+document.getElementById('dragonContainer')?.addEventListener('click', (e) => {
+  const now = Date.now();
+  if (now - lastTapTime < 300) {
+    // ダブルタップ検出 → 次のステージへ (解放済みの範囲内でのみループ)
+    if (maxUnlockedStage === 0) return; // 卵一つしかない場合は切り替えない
+    
+    currentStageIndex = (currentStageIndex + 1) % (maxUnlockedStage + 1);
+    const stage = DRAGON_STAGES[currentStageIndex];
+
+    const img = document.getElementById('dragonImage');
+    const nameEl = document.querySelector('.dragon-name');
+    const stageEl = document.querySelector('.dragon-stage');
+
+    // フェードアウト → 切り替え → フェードイン
+    img.style.transition = 'opacity 0.3s ease';
+    img.style.opacity = '0';
+
+    setTimeout(() => {
+      img.src = stage.image;
+      img.style.animation = `${stage.animation} 4s ease-in-out infinite`;
+      nameEl.textContent = stage.name;
+      stageEl.textContent = stage.stage;
+      
+      // 伝説の竜・古竜なら発光クラス付与
+      img.classList.remove('legendary-glow', 'mature-glow');
+      if (currentStageIndex === 5) {
+        img.classList.add('mature-glow');
+      } else if (currentStageIndex >= 6) {
+        img.classList.add('legendary-glow');
+      }
+
+      img.style.opacity = '1';
+    }, 300);
+  }
+  lastTapTime = now;
+});
 
 
 // --- プレイヤー名の設定とローカルストレージ ---
