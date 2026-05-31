@@ -858,6 +858,11 @@ const ACHIEVEMENTS = [
   { id: '1month', name: '一ヶ月の継続', desc: '累計30件', icon: 'assets/ui/badge_1month.png', condition: (count) => count >= 30 },
   { id: '50days', name: '半百の記録', desc: '累計50件', icon: 'assets/ui/badge_50days.png', condition: (count) => count >= 50 },
   { id: '100days', name: '百日草', desc: '累計100件', icon: 'assets/ui/badge_100days.png', condition: (count) => count >= 100 },
+  
+  // シークレット実績
+  { id: 'secret_77', name: 'ラッキーセブン', desc: '秘密の条件', icon: 'assets/ui/badge_1week.png', condition: (count) => count == 77, isSecret: true },
+  { id: 'secret_365', name: '星巡りの旅人', desc: '秘密の条件', icon: 'assets/ui/badge_1month.png', condition: (count) => count >= 365, isSecret: true },
+  { id: 'secret_999', name: '伝説の竜使い', desc: '秘密の条件', icon: 'assets/ui/badge_100days.png', condition: (count) => count >= 999, isSecret: true },
 ];
 
 function getUnlockedAchievements() {
@@ -873,13 +878,28 @@ function checkAchievements() {
   const count = Math.floor(localExp / 50);
 
   let unlocked = getUnlockedAchievements();
+  let newlyUnlocked = [];
+
   ACHIEVEMENTS.forEach(a => {
     if (a.condition(count) && !unlocked.includes(a.id)) {
       unlocked.push(a.id);
+      newlyUnlocked.push(a);
     }
   });
-  saveUnlockedAchievements(unlocked);
-  renderAchievements();
+  
+  if (newlyUnlocked.length > 0) {
+    saveUnlockedAchievements(unlocked);
+    renderAchievements();
+
+    // 新規解放された実績を通知する
+    newlyUnlocked.forEach((a, index) => {
+      setTimeout(() => {
+        if (typeof window.showAchievementToast === 'function') {
+          window.showAchievementToast(a.name, a.icon);
+        }
+      }, index * 4500); // 複数ある場合はずらして表示
+    });
+  }
 }
 
 function renderAchievements() {
@@ -890,8 +910,15 @@ function renderAchievements() {
   if (grid) {
     grid.innerHTML = '';
     ACHIEVEMENTS.forEach(a => {
+      const isUnlocked = unlocked.includes(a.id);
+      
+      // シークレットかつ未解放の場合は表示しない
+      if (a.isSecret && !isUnlocked) {
+        return;
+      }
+
       const card = document.createElement('div');
-      card.className = 'achievement-card ' + (unlocked.includes(a.id) ? 'unlocked' : 'locked');
+      card.className = 'achievement-card ' + (isUnlocked ? 'unlocked' : 'locked');
       card.innerHTML = `
         <img src="${a.icon}" class="achieve-icon-img">
         <div class="achieve-name">${a.name}</div>

@@ -41,6 +41,39 @@ function initTodayDate() {
 
 // --- 成長システム（状態管理） ---
 let playerLevel = 1;
+// --- 実績解除通知 ---
+window.showAchievementToast = function(title, icon) {
+  const toast = document.createElement('div');
+  toast.style.position = 'fixed';
+  toast.style.top = '-100px';
+  toast.style.left = '50%';
+  toast.style.transform = 'translateX(-50%)';
+  toast.style.zIndex = '9999';
+  toast.style.transition = 'top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+  
+  toast.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 12px; background: rgba(10, 15, 30, 0.95); border: 1px solid var(--accent-cyan); padding: 15px 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,240,255,0.4); color: white;">
+      <img src="${icon}" style="width: 40px; height: 40px; object-fit: contain;">
+      <div>
+        <div style="font-size: 0.8rem; color: var(--accent-cyan); margin-bottom: 3px;">実績解除！</div>
+        <div style="font-size: 1.1rem; font-weight: bold; letter-spacing: 0.05em;">${title}</div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(toast);
+
+  // 表示アニメーション
+  setTimeout(() => {
+    toast.style.top = '30px';
+  }, 100);
+
+  // 非表示アニメーション
+  setTimeout(() => {
+    toast.style.top = '-100px';
+    setTimeout(() => toast.remove(), 500);
+  }, 4000);
+};
+
 let currentExp = parseInt(localStorage.getItem('dragonDiaryExp')) || 0;
 
 // バグで付与された膨大なEXPを1回だけリセットする処理
