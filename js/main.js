@@ -113,7 +113,18 @@ function gainExp(amount) {
   // 炎画像のクリップ
   const flameImg = document.querySelector('.active-flame');
   if (flameImg) {
-    let progress = currentExp / 10000;
+    let maxExp = 10000;
+    while (currentExp >= maxExp) {
+      maxExp += 5000;
+    }
+    const midLabel = document.getElementById('flameMidLabel');
+    const maxLabel = document.getElementById('flameMaxLabel');
+    if (midLabel && maxLabel) {
+      midLabel.textContent = Math.floor(maxExp / 2);
+      maxLabel.textContent = maxExp;
+    }
+
+    let progress = currentExp / maxExp;
     if (progress > 1) progress = 1;
     if (progress < 0) progress = 0;
     const percent = progress * 100;
@@ -932,6 +943,11 @@ function initPowerGraphCanvas() {
 
       const activeWidth = canvas.width * 0.85;
 
+      let maxExp = 10000;
+      while (currentExp >= maxExp) {
+        maxExp += 5000;
+      }
+
       ctx.globalCompositeOperation = 'lighter';
       particles.forEach(p => {
         // 風に流されるような動き
@@ -940,7 +956,7 @@ function initPowerGraphCanvas() {
         p.opacity -= 0.008;
         
         if(p.y < 0 || p.opacity <= 0) {
-          p.x = Math.random() * (canvas.width * (Math.min(currentExp, 10000) / 10000) || 10);
+          p.x = Math.random() * (canvas.width * (Math.min(currentExp, maxExp) / maxExp) || 10);
           p.opacity = Math.random() * 0.6 + 0.4;
           // 新しく生まれるときに速度をリセット
           p.speedY = Math.random() * 2 + 0.5;
@@ -962,7 +978,7 @@ function initPowerGraphCanvas() {
       });
 
       // 現在値の縦線 (7850などの固定値から動的値へ)
-      let progress = currentExp / 10000;
+      let progress = currentExp / maxExp;
       if (progress > 1) progress = 1;
       if (progress < 0) progress = 0;
       const dynActiveWidth = canvas.width * progress;
