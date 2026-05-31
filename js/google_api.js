@@ -504,10 +504,10 @@ function openDiaryDetailModal(diary) {
   overlay.className = 'diary-detail-overlay tag-edit-overlay';
   overlay.innerHTML = `
     <div class="tag-edit-modal" style="width: 100%; height: 100dvh; max-width: none; border-radius: 0; border: none; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; background: var(--bg-card); overflow: hidden;">
-      <div id="detailViewMode" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+      <div id="detailViewMode" style="display: flex; flex-direction: column; flex: 1; overflow: hidden; min-height: 0;">
         <h3 style="font-size: 1.2rem; margin-bottom: 5px; flex-shrink: 0;">${displayTitle}</h3>
         <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; flex-shrink: 0;">${dateStr}</div>
-        <div style="flex: 1; overflow-y: auto; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem; word-break: break-word;">
+        <div style="flex: 1; overflow-y: auto; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem; word-break: break-word; min-height: 0;">
           ${formattedDesc}
           ${photoUrl ? `<div style="margin-top: 15px;"><a href="${photoUrl}" target="_blank" style="color: var(--accent-blue); text-decoration: underline;">添付写真を見る (Google Drive)</a></div>` : ''}
         </div>
@@ -521,9 +521,9 @@ function openDiaryDetailModal(diary) {
           <button class="tag-edit-close" id="detailCloseBtn" style="flex: 1; margin: 0; padding: 12px;">閉じる</button>
         </div>
       </div>
-      <div id="detailEditMode" style="display: none; flex-direction: column; flex: 1; height: 100%; overflow: hidden;">
+      <div id="detailEditMode" style="display: none; flex-direction: column; flex: 1; height: 100%; overflow: hidden; min-height: 0;">
         <input type="text" id="editDiaryTitle" value="${diary.summary || ''}" style="margin-bottom: 10px; flex-shrink: 0; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 12px; border-radius: 8px; font-size: 1rem; width: 100%; box-sizing: border-box;" placeholder="タイトル">
-        <textarea id="editDiaryDesc" style="flex: 1; margin-bottom: 15px; font-family: var(--font-body); resize: none; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 12px; border-radius: 8px; font-size: 1rem; width: 100%; box-sizing: border-box; line-height: 1.5;">${diary.description || ''}</textarea>
+        <textarea id="editDiaryDesc" style="flex: 1; margin-bottom: 15px; font-family: var(--font-body); resize: none; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 12px; border-radius: 8px; font-size: 1rem; width: 100%; box-sizing: border-box; line-height: 1.5; min-height: 0;">${diary.description || ''}</textarea>
         <div style="display: flex; gap: 10px; flex-shrink: 0; padding-bottom: max(env(safe-area-inset-bottom), 10px);">
           <button class="cyber-button" id="detailSaveBtn" style="flex: 1; padding: 12px; background: rgba(16,185,129,0.2); border-color: #10b981; color: #6ee7b7;">保存</button>
           <button class="tag-edit-close" id="detailCancelEditBtn" style="flex: 1; margin: 0; padding: 12px;">キャンセル</button>
