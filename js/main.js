@@ -730,45 +730,9 @@ eggStyles.textContent = `
 `;
 document.head.appendChild(eggStyles);
 
-// ダブルタップで解放済みの過去の姿に切り替え
-let lastTapTime = 0;
 
-document.getElementById('dragonContainer')?.addEventListener('click', (e) => {
-  const now = Date.now();
-  if (now - lastTapTime < 300) {
-    // ダブルタップ検出 → 次のステージへ (解放済みの範囲内でのみループ)
-    if (maxUnlockedStage === 0) return; // 卵一つしかない場合は切り替えない
-    
-    currentStageIndex = (currentStageIndex + 1) % (maxUnlockedStage + 1);
-    const stage = DRAGON_STAGES[currentStageIndex];
+// ダブルタップでの姿変更は廃止（EXPに応じた姿のみ表示）
 
-    const img = document.getElementById('dragonImage');
-    const nameEl = document.querySelector('.dragon-name');
-    const stageEl = document.querySelector('.dragon-stage');
-
-    // フェードアウト → 切り替え → フェードイン
-    img.style.transition = 'opacity 0.3s ease';
-    img.style.opacity = '0';
-
-    setTimeout(() => {
-      img.src = stage.image;
-      img.style.animation = `${stage.animation} 4s ease-in-out infinite`;
-      nameEl.textContent = stage.name;
-      stageEl.textContent = stage.stage;
-      
-      // 伝説の竜・古竜なら発光クラス付与
-      img.classList.remove('legendary-glow', 'mature-glow');
-      if (currentStageIndex === 5) {
-        img.classList.add('mature-glow');
-      } else if (currentStageIndex >= 6) {
-        img.classList.add('legendary-glow');
-      }
-
-      img.style.opacity = '1';
-    }, 300);
-  }
-  lastTapTime = now;
-});
 
 // --- プレイヤー名の設定とローカルストレージ ---
 function initPlayerName() {
@@ -797,59 +761,63 @@ function initPlayerName() {
   });
 }
 
-// --- ドラゴンからのコメント生成 ---
+// --- ドラゴンからのコメント生成（EXPベースで自動表示） ---
 function initDragonComments() {
-  const expReasons = [
-    { title: "【詳細な記録ボーナス +50 EXP】", type: "length" },
-    { title: "【連続記録ボーナス +30 EXP】", type: "streak" },
-    { title: "【困難を乗り越えたボーナス +40 EXP】", type: "emotion" },
-    { title: "【新たな発見ボーナス +20 EXP】", type: "discovery" }
-  ];
-
-  const commentsByStageAndType = {
-    0: {
-      length: "ピィ...ピィ... (たくさんの魔力が流れ込んできて、卵が暖かそうだ)",
-      streak: "コト...コト... (毎日魔力が注がれ、中で生命が育っている)",
-      emotion: "ピィ... (あなたの感情の揺らぎに反応して、卵が小さく光った)",
-      discovery: "コトッ！ (新しい魔力の刺激に驚いたように揺れた)"
-    },
-    1: {
-      length: "ピィッ！ (たっぷりの魔力をもらって、殻にヒビが入った！)",
-      streak: "ピィー！ (毎日の記録のおかげで、もうすぐ生まれそうだ！)",
-      emotion: "ピピィ... (あなたの強い思いを受け取り、熱を帯びている)",
-      discovery: "ピッ！ (未知の魔力に刺激され、少し殻が割れた！)"
-    },
-    2: {
-      length: "キュルル！ (あなたがたくさん書いた日記を、嬉しそうに読んでいる！)",
-      streak: "クウ... (毎日あなたに会えるのが嬉しいようだ)",
-      emotion: "キュン... (あなたが乗り越えた苦労を感じ取り、寄り添ってくれている)",
-      discovery: "キャッ！ (新しい出来事を知って、目を輝かせている！)"
-    },
-    3: {
-      length: "ギャオ！ (詳細な記録から、強い魔力を吸収して喜んでいる！)",
-      streak: "グルル... (毎日の継続が力になっている。頼もしそうにあなたを見ている)",
-      emotion: "ギャウ！ (辛いことを乗り越えたあなたを、力強く励ましている！)",
-      discovery: "ガウッ！ (あなたと共に新しい世界を知り、興奮しているようだ！)"
-    },
-    4: {
-      length: "ガァァ！ (その詳細な記録は素晴らしい。我が力となる！と言っているようだ)",
-      streak: "フン... (今日も続けるとはな。お前の根気を認めてやろう、という顔だ)",
-      emotion: "グルルォ... (その苦難を越えたお前は強い。私がついているぞ、と励ましている)",
-      discovery: "ガァッ！ (その探求心こそが我らを強くするのだ！)"
-    },
-    5: {
-      length: "グルルォォ！ (見事な記録だ。お前の歩みは確実に力となっている)",
-      streak: "（静かに頷き、あなたの毎日の継続を心から讃えている）",
-      emotion: "（優しく寄り添い、あなたの心の成長を誇りに思っているようだ）",
-      discovery: "グルォ... (その好奇心、忘れるでないぞ。共に歩もう)"
-    },
-    6: {
-      length: "「我が主よ、これほどの詳細な記録、見事な魔力の奔流だ。大儀である。」",
-      streak: "「日々の積み重ねこそが最強の魔法。そなたの継続、誇りに思うぞ。」",
-      emotion: "「その苦難を越え、さらに強くなったな。我が主よ、私はいつでもそなたと共にある。」",
-      discovery: "「ほう、また新たな知識を得たか。そなたの歩む道、我も共に楽しもうぞ。」"
-    }
+  // ステージごとのコメント（複数パターン）
+  const commentsByStage = {
+    0: [
+      "ピィ...ピィ... (たくさんの魔力が流れ込んできて、卵が暖かそうだ)",
+      "コト...コト... (毎日魔力が注がれ、中で生命が育っている)",
+      "ピィ... (あなたの感情の揺らぎに反応して、卵が小さく光った)",
+      "コトッ！ (新しい魔力の刺激に驚いたように揺れた)",
+      "（卵がほんのり温かい。日記を書くと、さらに光が強くなる気がする…）"
+    ],
+    1: [
+      "ピィッ！ (たっぷりの魔力をもらって、殻にヒビが入った！)",
+      "ピィー！ (毎日の記録のおかげで、もうすぐ生まれそうだ！)",
+      "ピピィ... (あなたの強い思いを受け取り、熱を帯びている)",
+      "ピッ！ (未知の魔力に刺激され、少し殻が割れた！)",
+      "（殻の隙間から小さな目がこちらを覗いている…！）"
+    ],
+    2: [
+      "キュルル！ (あなたがたくさん書いた日記を、嬉しそうに読んでいる！)",
+      "クウ... (毎日あなたに会えるのが嬉しいようだ)",
+      "キュン... (あなたが乗り越えた苦労を感じ取り、寄り添ってくれている)",
+      "キャッ！ (新しい出来事を知って、目を輝かせている！)",
+      "キュルキュル♪ (あなたのそばでご機嫌に尻尾を振っている)"
+    ],
+    3: [
+      "ギャオ！ (詳細な記録から、強い魔力を吸収して喜んでいる！)",
+      "グルル... (毎日の継続が力になっている。頼もしそうにあなたを見ている)",
+      "ギャウ！ (辛いことを乗り越えたあなたを、力強く励ましている！)",
+      "ガウッ！ (あなたと共に新しい世界を知り、興奮しているようだ！)",
+      "グルルゥ... (翼を広げ、あなたを守るように寄り添っている)"
+    ],
+    4: [
+      "ガァァ！ (その詳細な記録は素晴らしい。我が力となる！と言っているようだ)",
+      "フン... (今日も続けるとはな。お前の根気を認めてやろう、という顔だ)",
+      "グルルォ... (その苦難を越えたお前は強い。私がついているぞ、と励ましている)",
+      "ガァッ！ (その探求心こそが我らを強くするのだ！)",
+      "（炎を静かに吐き、あなたの道を照らしている）"
+    ],
+    5: [
+      "グルルォォ！ (見事な記録だ。お前の歩みは確実に力となっている)",
+      "（静かに頷き、あなたの毎日の継続を心から讃えている）",
+      "（優しく寄り添い、あなたの心の成長を誇りに思っているようだ）",
+      "グルォ... (その好奇心、忘れるでないぞ。共に歩もう)",
+      "（巨大な翼であなたを包み込み、深い信頼を示している）"
+    ],
+    6: [
+      "「我が主よ、これほどの詳細な記録、見事な魔力の奔流だ。大儀である。」",
+      "「日々の積み重ねこそが最強の魔法。そなたの継続、誇りに思うぞ。」",
+      "「その苦難を越え、さらに強くなったな。我が主よ、私はいつでもそなたと共にある。」",
+      "「ほう、また新たな知識を得たか。そなたの歩む道、我も共に楽しもうぞ。」",
+      "「我とそなたの絆は永遠だ。共にこの先も歩もうではないか。」"
+    ]
   };
+
+  // コメント画面のDragonステージ名
+  const stageNames = ['神秘の卵', '覚醒の卵', '幼竜', '若竜', '飛竜', '古竜', '伝説の竜'];
 
   const navItems = document.querySelectorAll('.nav-item');
   const commentBox = document.getElementById('dragonCommentBox');
@@ -858,14 +826,20 @@ function initDragonComments() {
     item.addEventListener('click', () => {
       const page = item.getAttribute('data-page');
       if (page === 'stats') {
-        const stageData = commentsByStageAndType[currentStageIndex] || commentsByStageAndType[2];
-        const randomReason = expReasons[Math.floor(Math.random() * expReasons.length)];
-        const dragonWord = stageData[randomReason.type];
+        // 現在のEXPに基づくステージを算出
+        const exp = parseInt(localStorage.getItem('dragonDiaryExp')) || 0;
+        let stageIdx = 0;
+        for (let i = 0; i < STAGE_THRESHOLDS.length; i++) {
+          if (exp >= STAGE_THRESHOLDS[i]) stageIdx = i;
+        }
+        const comments = commentsByStage[stageIdx] || commentsByStage[0];
+        const dragonWord = comments[Math.floor(Math.random() * comments.length)];
+        const stageName = stageNames[stageIdx] || '???';
         
         if (commentBox) {
           commentBox.innerHTML = `
-            <div style="margin-bottom: 15px; text-align: center; font-family: var(--font-display); color: var(--accent-gold); font-size: 0.95rem;">
-              ${randomReason.title}
+            <div style="margin-bottom: 10px; text-align: center; font-family: var(--font-display); color: var(--accent-gold); font-size: 0.85rem;">
+              🐉 ${stageName} ─ 総魔力: ${exp} EXP
             </div>
             <p class="accent-cyan" style="font-size:1.05rem; text-align:center; line-height: 1.6;">
               ${dragonWord}
@@ -1118,7 +1092,7 @@ function initRadarChart() {
   }
 }
 
-// --- Notifications ---
+// --- Notifications (アプリ内バナー通知) ---
 function initNotifications() {
   const toggle = document.getElementById('reminderToggle');
   const timeInput = document.getElementById('reminderTime');
@@ -1128,40 +1102,88 @@ function initNotifications() {
   toggle.checked = localStorage.getItem('reminderEnabled') === 'true';
   timeInput.value = localStorage.getItem('reminderTime') || '21:00';
 
-  toggle.addEventListener('change', async (e) => {
-    if (e.target.checked) {
-      if ('Notification' in window) {
-        const perm = await Notification.requestPermission();
-        if (perm !== 'granted') {
-          e.target.checked = false;
-          alert('通知が許可されませんでした。ブラウザの設定をご確認ください。');
-        }
-      } else {
-        alert('このブラウザは通知に対応していません。');
-        e.target.checked = false;
-      }
-    }
+  toggle.addEventListener('change', (e) => {
     localStorage.setItem('reminderEnabled', e.target.checked);
+    if (e.target.checked) {
+      showInAppNotification('✅ リマインダーをONにしました！', `毎日 ${timeInput.value} に通知します`);
+    }
   });
 
   timeInput.addEventListener('change', (e) => {
     localStorage.setItem('reminderTime', e.target.value);
+    if (toggle.checked) {
+      showInAppNotification('⏰ 通知時間を変更しました', `毎日 ${e.target.value} に通知します`);
+    }
   });
 
-  // Check every minute
+  // 30秒ごとにチェック
   setInterval(() => {
-    if (localStorage.getItem('reminderEnabled') === 'true' && 'Notification' in window && Notification.permission === 'granted') {
+    if (localStorage.getItem('reminderEnabled') === 'true') {
       const targetTime = localStorage.getItem('reminderTime') || '21:00';
       const now = new Date();
       const currentHM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const todayKey = `notified_${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
       
-      if (currentHM === targetTime && localStorage.getItem('lastNotifiedTime') !== currentHM) {
-        localStorage.setItem('lastNotifiedTime', currentHM);
-        new Notification('竜の日記', {
-          body: '今日の日記を書く時間です！ドラゴンがあなたを待っています。',
-          icon: 'assets/ui/badge_first_step.png'
-        });
+      if (currentHM === targetTime && !localStorage.getItem(todayKey)) {
+        localStorage.setItem(todayKey, 'true');
+        showInAppNotification('🐉 竜の日記', '今日の日記を書く時間です！ドラゴンがあなたを待っています。');
       }
     }
-  }, 30000); // 30 seconds
+  }, 30000);
 }
+
+// アプリ内バナー通知
+function showInAppNotification(title, body) {
+  // 既存の通知があれば削除
+  document.querySelectorAll('.in-app-notification').forEach(n => n.remove());
+  
+  const notification = document.createElement('div');
+  notification.className = 'in-app-notification';
+  notification.innerHTML = `
+    <div style="font-weight: bold; font-size: 0.95rem; margin-bottom: 4px;">${title}</div>
+    <div style="font-size: 0.8rem; color: var(--text-secondary);">${body}</div>
+  `;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    z-index: 10000;
+    background: linear-gradient(135deg, rgba(20,20,40,0.95), rgba(30,30,60,0.95));
+    border: 1px solid var(--accent-cyan, #06b6d4);
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: #fff;
+    max-width: 85vw;
+    box-shadow: 0 8px 32px rgba(6,182,212,0.3);
+    backdrop-filter: blur(10px);
+    transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+    opacity: 0;
+    cursor: pointer;
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // スライドイン
+  requestAnimationFrame(() => {
+    notification.style.transform = 'translateX(-50%) translateY(0)';
+    notification.style.opacity = '1';
+  });
+  
+  // タップで閉じる
+  notification.addEventListener('click', () => {
+    notification.style.transform = 'translateX(-50%) translateY(-100px)';
+    notification.style.opacity = '0';
+    setTimeout(() => notification.remove(), 400);
+  });
+  
+  // 5秒後に自動で消える
+  setTimeout(() => {
+    if (notification.parentElement) {
+      notification.style.transform = 'translateX(-50%) translateY(-100px)';
+      notification.style.opacity = '0';
+      setTimeout(() => notification.remove(), 400);
+    }
+  }, 5000);
+}
+
