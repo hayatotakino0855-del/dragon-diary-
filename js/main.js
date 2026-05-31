@@ -1385,12 +1385,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   document.body.addEventListener('click', () => {
     const isEnabled = localStorage.getItem('bgmEnabled') === 'true';
-    if (isEnabled && ytPlayer && ytPlayer.getPlayerState) {
+    if (isEnabled && ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
       const state = ytPlayer.getPlayerState();
       if (state !== YT.PlayerState.PLAYING && state !== YT.PlayerState.BUFFERING) {
         ytPlayer.playVideo();
       }
     }
-  }, { once: true });
+  });
 });
 
