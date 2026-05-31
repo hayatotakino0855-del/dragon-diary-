@@ -1,0 +1,1167 @@
+// ============================================
+// Dragon Diary - Main JS
+// ホーム画面のインタラクション
+// ============================================
+
+document.addEventListener('DOMContentLoaded', () => {
+  initDragonParticles();
+  initDragonTap();
+  initDragonDrag(); // ドラッグ機能を追加
+  initRandomVideoActions(); // ランダム動画再生機能を追加
+  initNavigation();
+  initStatBarAnimation();
+  initPlayerName();
+  initDragonComments();
+  initNotifications();
+  initPowerGraphCanvas();
+  initStatusCards();
+  initRadarChart();
+  initTestExpButton();
+  initTodayDate();
+  
+  // 初期状態の表示を更新
+  gainExp(0);
+});
+
+function initTodayDate() {
+  const today = new Date();
+  const month = today.getMonth() + 1;
+  const day = today.getDate();
+  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+  const weekday = weekdays[today.getDay()];
+
+  const elMonth = document.getElementById('todayMonthDisplay');
+  const elDay = document.getElementById('todayDayDisplay');
+  const elWeekday = document.getElementById('todayWeekdayDisplay');
+  
+  if (elMonth) elMonth.textContent = `${month}月`;
+  if (elDay) elDay.textContent = `${day}日`;
+  if (elWeekday) elWeekday.textContent = `${weekday}曜日`;
+}
+
+// --- 成長システム（状態管理） ---
+let playerLevel = 1;
+let currentExp = parseInt(localStorage.getItem('dragonDiaryExp')) || 0;
+
+// バグで付与された膨大なEXPを1回だけリセットする処理
+if (currentExp >= 5000 && !localStorage.getItem('expResetV13')) {
+  currentExp = 0;
+  localStorage.setItem('dragonDiaryExp', 0);
+  localStorage.setItem('expResetV13', 'true');
+}
+
+// v14での実績リセット（過去の同期による全開放を直すため）
+if (!localStorage.getItem('achieveResetV14')) {
+  localStorage.removeItem('unlockedAchievements');
+  localStorage.setItem('achieveResetV14', 'true');
+}
+
+let maxUnlockedStage = 0; // 最初は第1段階(卵)のみ解放
+let currentStageIndex = 0; // 現在表示中のステージ
+let isEvolving = false; // 進化アニメーション中かどうかのフラグ
+const STAGE_THRESHOLDS = [0, 5000, 10000, 15000, 20000, 30000, 50000];
+
+function gainExp(amount) {
+  if (isEvolving) return; // 進化中はEXP取得（連打）を無視する
+  
+  currentExp += amount;
+  localStorage.setItem('dragonDiaryExp', currentExp); // 経験値をローカル保存
+  playerLevel = Math.floor(currentExp / 5000) + 1;
+  
+  const levelDisplay = document.getElementById('playerLevelDisplay');
+  if (levelDisplay) levelDisplay.textContent = `プレイヤーレベル: ${playerLevel}`;
+  const expDisplay = document.getElementById('powerValueDisplay');
+  if (expDisplay) expDisplay.innerHTML = `${currentExp} <span style="font-size: 0.6em; color: var(--text-muted);">EXP</span>`;
+
+  // 総合魔力の表示も更新
+  const magicDisplay = document.getElementById('displayTotalMagic');
+  if (magicDisplay) magicDisplay.textContent = currentExp;
+
+  let newUnlockedStage = maxUnlockedStage;
+  for (let i = 0; i < STAGE_THRESHOLDS.length; i++) {
+    if (currentExp >= STAGE_THRESHOLDS[i]) {
+      newUnlockedStage = i;
+    }
+  }
+
+  // 進化基準に達した場合の強制イベント
+  if (newUnlockedStage > maxUnlockedStage) {
+    maxUnlockedStage = newUnlockedStage;
+    triggerEvolution(newUnlockedStage);
+  } else if (amount === 0) {
+    // 初回ロード時の画像セット用
+    currentStageIndex = maxUnlockedStage;
+    const stage = DRAGON_STAGES[currentStageIndex];
+    const img = document.getElementById('dragonImage');
+    const nameEl = document.querySelector('.dragon-name');
+    const stageEl = document.querySelector('.dragon-stage');
+    if(img && stage) {
+      img.src = stage.image;
+      img.style.animation = `${stage.animation} 4s ease-in-out infinite`;
+      nameEl.textContent = stage.name;
+      stageEl.textContent = stage.stage;
+      // 伝説の竜・古竜なら発光クラス付与
+      img.classList.remove('legendary-glow', 'mature-glow');
+      if (currentStageIndex === 5) {
+        img.classList.add('mature-glow');
+      } else if (currentStageIndex >= 6) {
+        img.classList.add('legendary-glow');
+      }
+    }
+  }
+
+  // 炎画像のクリップ
+  const flameImg = document.querySelector('.static-flame-img');
+  if (flameImg) {
+    let progress = currentExp / 10000;
+    if (progress > 1) progress = 1;
+    if (progress < 0) progress = 0;
+    const percent = progress * 100;
+    flameImg.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
+  }
+
+  // レーダーチャートの更新
+  if (typeof window.updateRadarChart === 'function') {
+    window.updateRadarChart(currentExp);
+  }
+
+  // プレイヤーレベルのサークルゲージ更新
+  const circleGauge = document.querySelector('.circle-gauge');
+  if (circleGauge) {
+    const levelProgress = currentExp > 0 ? (currentExp % 5000) / 5000 * 100 : 0;
+    circleGauge.style.background = `conic-gradient(var(--accent-cyan) ${levelProgress}%, rgba(255,255,255,0.1) 0)`;
+  }
+}
+
+function triggerEvolution(targetStageIndex) {
+  const container = document.getElementById('dragonContainer');
+  if (!container) return;
+  
+  isEvolving = true; // 進化ロック
+  
+  // 進化を見せるために強制的に一番上へスクロール
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  
+  // 対象の段階に応じてエフェクトとタイミングを切り替える
+  let effectClass = 'evolution-light';
+  let switchDelay = 1000;
+  let duration = 2000;
+  
+  const stormOverlay = document.getElementById('stormOverlay');
+  const rainContainer = document.getElementById('rainContainer');
+  const lightningFlash = document.getElementById('lightningFlash');
+  const dragonArea = document.getElementById('dragonArea');
+  
+  let useStorm = false;
+  let useLightning = false;
+
+  if (targetStageIndex >= 6) {
+    // 伝説の竜：黒雲、雨、激雷
+    effectClass = 'evolution-storm';
+    switchDelay = 1800;
+    duration = 4500;
+    useStorm = true;
+    useLightning = true;
+  } else if (targetStageIndex >= 5) {
+    // 古竜：黄金オーラと激しい雷
+    effectClass = 'evolution-golden-lightning';
+    switchDelay = 1800;
+    duration = 3500;
+    useLightning = true;
+  } else if (targetStageIndex >= 4) {
+    // 青年竜：雷エフェクトと振動
+    effectClass = 'evolution-lightning';
+    switchDelay = 1250;
+    duration = 2500;
+    useLightning = true;
+  } else if (targetStageIndex >= 3) {
+    // 少年竜：強烈な光とオーラ
+    effectClass = 'evolution-aura';
+    switchDelay = 1250;
+    duration = 2500;
+  }
+  
+  if (useStorm) {
+    if (stormOverlay) stormOverlay.classList.add('active');
+    if (dragonArea) dragonArea.classList.add('bring-to-front');
+    if (rainContainer) {
+      rainContainer.classList.add('active');
+      rainContainer.innerHTML = '';
+      for (let i = 0; i < 40; i++) {
+        const drop = document.createElement('div');
+        drop.className = 'rain-drop';
+        drop.style.left = `${Math.random() * 100}%`;
+        drop.style.animationDuration = `${0.3 + Math.random() * 0.3}s`;
+        drop.style.animationDelay = `${Math.random()}s`;
+        rainContainer.appendChild(drop);
+      }
+    }
+  }
+
+  if (useLightning) {
+    if (lightningFlash) {
+      lightningFlash.classList.remove('active');
+      void lightningFlash.offsetWidth; // リフロー
+      lightningFlash.classList.add('active');
+    }
+    // 実際の稲妻（雷の形をした図形）を時間差で落とす
+    for(let i=0; i<3; i++) {
+      setTimeout(() => createLightningBolt(), i * 400 + Math.random() * 200);
+    }
+    if (targetStageIndex >= 6) { 
+      // 伝説の竜は後半にもさらに雷を落とす
+      for(let i=0; i<5; i++) {
+        setTimeout(() => createLightningBolt(), 1500 + i * 300 + Math.random() * 200);
+      }
+    }
+  }
+
+  // 発光エフェクト付与
+  container.classList.add(effectClass);
+  
+  // 時間差でパーティクルを発生
+  spawnTapParticles(container);
+  setTimeout(() => spawnTapParticles(container), 200);
+  setTimeout(() => spawnTapParticles(container), 400);
+  setTimeout(() => spawnTapParticles(container), 600);
+  if (targetStageIndex >= 3) setTimeout(() => spawnTapParticles(container), 800);
+  if (targetStageIndex >= 5) setTimeout(() => spawnTapParticles(container), 1000);
+
+  // 光が最も強いタイミングで新しい姿に切り替える
+  setTimeout(() => {
+    currentStageIndex = targetStageIndex;
+    const stage = DRAGON_STAGES[currentStageIndex];
+    const img = document.getElementById('dragonImage');
+    const nameEl = document.querySelector('.dragon-name');
+    const stageEl = document.querySelector('.dragon-stage');
+    
+    img.src = stage.image;
+    img.style.animation = `${stage.animation} 4s ease-in-out infinite`;
+    nameEl.textContent = stage.name;
+    stageEl.textContent = stage.stage;
+    
+    // 伝説の竜・古竜なら発光クラス付与
+    img.classList.remove('legendary-glow', 'mature-glow');
+    if (currentStageIndex === 5) {
+      img.classList.add('mature-glow');
+    } else if (currentStageIndex >= 6) {
+      img.classList.add('legendary-glow');
+    }
+  }, switchDelay);
+
+  // エフェクト終了
+  setTimeout(() => {
+    container.classList.remove(effectClass);
+    if (useStorm) {
+      if (stormOverlay) stormOverlay.classList.remove('active');
+      if (rainContainer) rainContainer.classList.remove('active');
+      if (dragonArea) dragonArea.classList.remove('bring-to-front');
+    }
+    isEvolving = false; // 進化ロック解除
+  }, duration);
+}
+
+// 実際の稲妻（雷）のSVGを画面に生成する関数
+function createLightningBolt() {
+  const container = document.getElementById('lightningFlash');
+  if (!container) return;
+  const bolt = document.createElement('div');
+  bolt.className = 'real-lightning-bolt';
+  bolt.style.left = `${Math.random() * 80 + 10}%`;
+  bolt.style.top = `-10%`;
+  
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 100 500");
+  svg.style.width = "80px";
+  svg.style.height = "100vh";
+  svg.style.filter = "drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #0ff)";
+  
+  const polygon = document.createElementNS(svgNS, "polygon");
+  // 稲妻のギザギザを描画
+  polygon.setAttribute("points", "50,0 20,150 45,150 15,300 40,300 0,500 80,250 40,250 70,100 40,100");
+  polygon.setAttribute("fill", "white");
+  
+  svg.appendChild(polygon);
+  bolt.appendChild(svg);
+  container.appendChild(bolt);
+  
+  setTimeout(() => {
+    bolt.remove();
+  }, 400);
+}
+
+function initTestExpButton() {
+  const btn = document.getElementById('testExpButton');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      gainExp(5000); // 1回押すたびに5000EXP（1段階分）獲得
+    });
+  }
+}
+
+// --- ドラゴンのパーティクルエフェクト ---
+function initDragonParticles() {
+  const container = document.getElementById('dragonParticles');
+  if (!container) return;
+
+  const PARTICLE_COUNT = 8;
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+
+    // ランダムな位置と遅延
+    const x = 30 + Math.random() * 40; // 中央付近に集中
+    const y = 40 + Math.random() * 30;
+    const delay = Math.random() * 3;
+    const duration = 2 + Math.random() * 2;
+    const size = 2 + Math.random() * 3;
+
+    // 色のバリエーション
+    const colors = [
+      'rgba(139, 92, 246, 0.8)',   // violet
+      'rgba(74, 125, 255, 0.8)',   // blue
+      'rgba(34, 211, 238, 0.6)',   // cyan
+      'rgba(255, 255, 255, 0.4)',  // white
+    ];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+
+    particle.style.cssText = `
+      left: ${x}%;
+      top: ${y}%;
+      width: ${size}px;
+      height: ${size}px;
+      background: ${color};
+      animation-delay: ${delay}s;
+      animation-duration: ${duration}s;
+      box-shadow: 0 0 ${size * 2}px ${color};
+    `;
+
+    container.appendChild(particle);
+  }
+}
+
+// --- ドラゴンをタップした時のリアクション ---
+function initDragonTap() {
+  const dragonContainer = document.getElementById('dragonContainer');
+  const dragonImage = document.getElementById('dragonImage');
+  if (!dragonContainer || !dragonImage) return;
+
+  dragonContainer.addEventListener('click', () => {
+    // 小さくバウンスするアニメーション
+    dragonImage.style.animation = 'none';
+    dragonImage.offsetHeight; // reflow
+    dragonImage.style.animation = 'dragonTap 0.6s ease, dragonBreathing 4s ease-in-out 0.6s infinite';
+
+    // タップ時にパーティクルを一時的に増やす
+    spawnTapParticles(dragonContainer);
+  });
+}
+
+// タップ時の一時パーティクル
+function spawnTapParticles(container) {
+  const rect = container.getBoundingClientRect();
+
+  for (let i = 0; i < 6; i++) {
+    const spark = document.createElement('div');
+    spark.className = 'tap-spark';
+
+    const angle = (Math.PI * 2 * i) / 6;
+    const distance = 40 + Math.random() * 30;
+    const x = Math.cos(angle) * distance;
+    const y = Math.sin(angle) * distance;
+
+    spark.style.cssText = `
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 4px;
+      height: 4px;
+      background: rgba(34, 211, 238, 0.9);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+      pointer-events: none;
+      z-index: 10;
+      transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      opacity: 1;
+    `;
+
+    container.appendChild(spark);
+
+    // アニメーション発火
+    requestAnimationFrame(() => {
+      spark.style.transform = `translate(${x}px, ${y}px) scale(0)`;
+      spark.style.opacity = '0';
+    });
+
+    // 後片付け
+    setTimeout(() => spark.remove(), 600);
+  }
+}
+
+// CSS でタップアニメーションを追加
+const tapStyle = document.createElement('style');
+tapStyle.textContent = `
+  @keyframes dragonTap {
+    0%   { transform: scale(1); }
+    15%  { transform: scale(0.9); }
+    30%  { transform: scale(1.1) translateY(-8px); }
+    50%  { transform: scale(1.05) translateY(-4px); }
+    70%  { transform: scale(1.02) translateY(-2px); }
+    100% { transform: scale(1) translateY(0); }
+  }
+  .dragon-dragging {
+    animation: none !important;
+    transition: none !important;
+    transform: scale(1.1) !important;
+    filter: drop-shadow(0 20px 25px rgba(139, 92, 246, 0.5)) !important;
+    z-index: 1000;
+  }
+  .dragon-snap-back {
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+`;
+document.head.appendChild(tapStyle);
+
+// --- ドラゴンのドラッグ（引っ張る）機能 ---
+function initDragonDrag() {
+  const container = document.getElementById('dragonContainer');
+  if (!container) return;
+
+  let isDragging = false;
+  let startX = 0, startY = 0;
+  let currentX = 0, currentY = 0;
+
+  const startDrag = (e) => {
+    isDragging = true;
+    container.classList.add('dragon-dragging');
+    container.classList.remove('dragon-snap-back');
+
+    // タッチかマウスか判定
+    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+    startX = clientX - currentX;
+    startY = clientY - currentY;
+
+    // デフォルトの画像ドラッグを防止
+    if (e.target.tagName === 'IMG') {
+      e.preventDefault();
+    }
+  };
+
+  const moveDrag = (e) => {
+    if (!isDragging) return;
+    e.preventDefault(); // スクロール防止
+
+    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+    currentX = clientX - startX;
+    currentY = clientY - startY;
+
+    // ドラゴンを指に追従させる
+    container.style.transform = `translate(${currentX}px, ${currentY}px) scale(1.1)`;
+  };
+
+  const endDrag = () => {
+    if (!isDragging) return;
+    isDragging = false;
+
+    container.classList.remove('dragon-dragging');
+    container.classList.add('dragon-snap-back');
+
+    // 元の位置に戻す
+    currentX = 0;
+    currentY = 0;
+    container.style.transform = '';
+
+    // アニメーションを再開させるために少し待つ
+    setTimeout(() => {
+      container.classList.remove('dragon-snap-back');
+    }, 500);
+  };
+
+  // マウスイベント
+  container.addEventListener('mousedown', startDrag);
+  window.addEventListener('mousemove', moveDrag);
+  window.addEventListener('mouseup', endDrag);
+
+  // タッチイベント
+  container.addEventListener('touchstart', startDrag, { passive: false });
+  window.addEventListener('touchmove', moveDrag, { passive: false });
+  window.addEventListener('touchend', endDrag);
+}
+
+// --- ドラゴンのランダム動画再生機能 ---
+function initRandomVideoActions() {
+  const dragonImage = document.getElementById('dragonImage');
+  const dragonVideo = document.getElementById('dragonVideo');
+  if (!dragonImage || !dragonVideo) return;
+
+  // 幼竜の動画パターン
+  const hatchlingVideos = [
+    'assets/dragons/videos/hatchling_action1.mp4',
+    'assets/dragons/videos/hatchling_action2.mp4',
+    'assets/dragons/videos/hatchling_action3.mp4'
+  ];
+
+  // 少年竜の動画パターン
+  const youngVideos = [
+    'assets/dragons/videos/young_action1.mp4',
+    'assets/dragons/videos/young_action2.mp4',
+    'assets/dragons/videos/young_action3.mp4',
+    'assets/dragons/videos/young_action4.mp4'
+  ];
+
+  // 青年竜の動画パターン
+  const juvenileVideos = [
+    'assets/dragons/videos/juvenile_action1.mp4'
+  ];
+
+  // 古竜の動画パターン
+  const matureVideos = [
+    'assets/dragons/videos/mature_action1.mp4'
+  ];
+
+  // 伝説の竜の動画パターン
+  const legendaryVideos = [
+    'assets/dragons/videos/legendary_action1.mp4',
+    'assets/dragons/videos/legendary_action2.mp4'
+  ];
+
+  let actionTimer;
+
+  const playRandomAction = () => {
+    let videoPatterns = [];
+
+    // 現在の姿に合わせて再生する動画リストを決める
+    if (dragonImage.src.includes('stage3_hatchling')) {
+      videoPatterns = hatchlingVideos;
+    } else if (dragonImage.src.includes('stage4_young')) {
+      videoPatterns = youngVideos;
+    } else if (dragonImage.src.includes('stage5_juvenile')) {
+      videoPatterns = juvenileVideos;
+    } else if (dragonImage.src.includes('stage6_mature')) {
+      videoPatterns = matureVideos;
+    } else if (dragonImage.src.includes('stage7_legendary')) {
+      videoPatterns = legendaryVideos;
+    } else {
+      // 幼竜・少年竜・青年竜・古竜・伝説の竜以外はスキップ
+      scheduleNextAction();
+      return;
+    }
+
+    // ランダムな動画を選択
+    const randomVideo = videoPatterns[Math.floor(Math.random() * videoPatterns.length)];
+    
+    // 動画のロードと再生準備
+    dragonVideo.src = randomVideo;
+    dragonVideo.load();
+    
+    dragonVideo.onloadeddata = () => {
+      const container = document.querySelector('.dragon-container');
+      container.classList.add('flash-active');
+
+      // 光が最も強くなるタイミング（400ms後）で切り替える
+      setTimeout(() => {
+        dragonImage.style.opacity = '0';
+        dragonVideo.style.opacity = '1';
+        dragonVideo.play().catch(e => {
+          // 自動再生がブラウザにブロックされた場合は元に戻す
+          console.warn('Video auto-play prevented', e);
+          resetToImage();
+        });
+      }, 400);
+
+      // アニメーション終了後にクラスを外す
+      setTimeout(() => {
+        container.classList.remove('flash-active');
+      }, 800);
+    };
+  };
+
+  const resetToImage = () => {
+    const dragonVideo = document.getElementById('dragonVideo');
+    const dragonImage = document.getElementById('dragonImage');
+    const container = document.querySelector('.dragon-container');
+    if (!dragonVideo || !dragonImage || !container) return;
+
+    container.classList.add('flash-active');
+    
+    setTimeout(() => {
+      dragonImage.style.opacity = '1';
+      dragonVideo.style.opacity = '0';
+    }, 400);
+
+    setTimeout(() => {
+      container.classList.remove('flash-active');
+      // タイマーはinitRandomVideoActions側で再設定される
+    }, 800);
+  };
+
+  const scheduleNextAction = () => {
+    // 5秒〜15秒のランダムな時間で次の動画再生を予約
+    const randomDelay = Math.floor(Math.random() * 10000) + 5000;
+    clearTimeout(actionTimer);
+    actionTimer = setTimeout(playRandomAction, randomDelay);
+  };
+
+  // 動画再生終了時のイベント
+  dragonVideo.addEventListener('ended', resetToImage);
+
+  // 初回のタイマーをセット
+  scheduleNextAction();
+}
+
+// --- ナビゲーションと画面切り替え ---
+function initNavigation() {
+  const navItems = document.querySelectorAll('.nav-item');
+  const views = document.querySelectorAll('.view-section');
+
+  function switchView(targetId) {
+    views.forEach(view => {
+      view.style.display = 'none';
+      view.classList.remove('active');
+    });
+    const targetView = document.getElementById(targetId);
+    if (targetView) {
+      targetView.style.display = 'block';
+      // 少し遅らせてアニメーションクラスをつける
+      setTimeout(() => targetView.classList.add('active'), 10);
+    }
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      navItems.forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+      const page = item.getAttribute('data-page');
+      switchView(`view-${page}`);
+    });
+  });
+
+  // 日記を書くボタン
+  const writeBtn = document.getElementById('writeButton');
+  if (writeBtn) {
+    writeBtn.addEventListener('click', () => {
+      switchView('view-write');
+    });
+  }
+
+  // 日記作成から戻るボタン
+  const backBtn = document.getElementById('backFromWrite');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      switchView('view-home');
+      // ホームタブをアクティブに戻す
+      navItems.forEach(n => n.classList.remove('active'));
+      document.querySelector('.nav-item[data-page="home"]').classList.add('active');
+    });
+  }
+}
+
+// --- ステータスバーのアニメーション ---
+function initStatBarAnimation() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const bars = entry.target.querySelectorAll('.stat-bar-fill');
+        bars.forEach((bar, index) => {
+          const targetWidth = bar.style.width;
+          bar.style.width = '0%';
+          setTimeout(() => {
+            bar.style.width = targetWidth;
+          }, 100 + index * 150);
+        });
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  const statsGrid = document.querySelector('.stats-grid');
+  if (statsGrid) observer.observe(statsGrid);
+}
+
+// --- ドラゴンの段階を切り替える（デモ用） ---
+const DRAGON_STAGES = [
+  { image: 'assets/dragons/stage1_egg.png',       name: '神秘の卵',   stage: '第1段階', animation: 'eggIdle' },
+  { image: 'assets/dragons/stage2_egg.png',        name: '覚醒の卵',   stage: '第2段階', animation: 'eggWobble' },
+  { image: 'assets/dragons/stage3_hatchling.png',  name: '幼竜',      stage: '第3段階', animation: 'dragonBreathing' },
+  { image: 'assets/dragons/stage4_young.png',      name: '少年竜',    stage: '第4段階', animation: 'dragonBreathing' },
+  { image: 'assets/dragons/stage5_juvenile.png',   name: '青年竜',    stage: '第5段階', animation: 'dragonFloat' },
+  { image: 'assets/dragons/stage6_mature.png',     name: '古竜',      stage: '第6段階', animation: 'dragonFloat' },
+  { image: 'assets/dragons/stage7_legendary.png',  name: '伝説の竜',  stage: '第7段階', animation: 'dragonFloat' },
+];
+
+// 卵専用アニメーション
+const eggStyles = document.createElement('style');
+eggStyles.textContent = `
+  @keyframes eggIdle {
+    0%, 100% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.3));
+    }
+    50% {
+      transform: scale(1.01);
+      filter: drop-shadow(0 0 25px rgba(139, 92, 246, 0.5));
+    }
+  }
+
+  @keyframes eggWobble {
+    0%, 80%, 100% {
+      transform: rotate(0deg) scale(1);
+      filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.3));
+    }
+    85% {
+      transform: rotate(-3deg) scale(1.02);
+      filter: drop-shadow(0 0 25px rgba(74, 125, 255, 0.6));
+    }
+    90% {
+      transform: rotate(3deg) scale(1.02);
+      filter: drop-shadow(0 0 25px rgba(74, 125, 255, 0.6));
+    }
+    95% {
+      transform: rotate(-1.5deg) scale(1.01);
+      filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.5));
+    }
+  }
+`;
+document.head.appendChild(eggStyles);
+
+// ダブルタップで解放済みの過去の姿に切り替え
+let lastTapTime = 0;
+
+document.getElementById('dragonContainer')?.addEventListener('click', (e) => {
+  const now = Date.now();
+  if (now - lastTapTime < 300) {
+    // ダブルタップ検出 → 次のステージへ (解放済みの範囲内でのみループ)
+    if (maxUnlockedStage === 0) return; // 卵一つしかない場合は切り替えない
+    
+    currentStageIndex = (currentStageIndex + 1) % (maxUnlockedStage + 1);
+    const stage = DRAGON_STAGES[currentStageIndex];
+
+    const img = document.getElementById('dragonImage');
+    const nameEl = document.querySelector('.dragon-name');
+    const stageEl = document.querySelector('.dragon-stage');
+
+    // フェードアウト → 切り替え → フェードイン
+    img.style.transition = 'opacity 0.3s ease';
+    img.style.opacity = '0';
+
+    setTimeout(() => {
+      img.src = stage.image;
+      img.style.animation = `${stage.animation} 4s ease-in-out infinite`;
+      nameEl.textContent = stage.name;
+      stageEl.textContent = stage.stage;
+      
+      // 伝説の竜・古竜なら発光クラス付与
+      img.classList.remove('legendary-glow', 'mature-glow');
+      if (currentStageIndex === 5) {
+        img.classList.add('mature-glow');
+      } else if (currentStageIndex >= 6) {
+        img.classList.add('legendary-glow');
+      }
+
+      img.style.opacity = '1';
+    }, 300);
+  }
+  lastTapTime = now;
+});
+
+// --- プレイヤー名の設定とローカルストレージ ---
+function initPlayerName() {
+  const modal = document.getElementById('player-setup-modal');
+  const input = document.getElementById('player-name-input');
+  const submitBtn = document.getElementById('player-name-submit');
+  const displayName = document.getElementById('display-player-name');
+
+  if (!modal || !input || !submitBtn || !displayName) return;
+
+  let savedName = localStorage.getItem('dragonDiaryPlayerName');
+  if (savedName) {
+    displayName.textContent = savedName;
+    modal.classList.add('hidden');
+  } else {
+    modal.classList.remove('hidden');
+  }
+
+  submitBtn.addEventListener('click', () => {
+    const name = input.value.trim();
+    if (name) {
+      localStorage.setItem('dragonDiaryPlayerName', name);
+      displayName.textContent = name;
+      modal.classList.add('hidden');
+    }
+  });
+}
+
+// --- ドラゴンからのコメント生成 ---
+function initDragonComments() {
+  const expReasons = [
+    { title: "【詳細な記録ボーナス +50 EXP】", type: "length" },
+    { title: "【連続記録ボーナス +30 EXP】", type: "streak" },
+    { title: "【困難を乗り越えたボーナス +40 EXP】", type: "emotion" },
+    { title: "【新たな発見ボーナス +20 EXP】", type: "discovery" }
+  ];
+
+  const commentsByStageAndType = {
+    0: {
+      length: "ピィ...ピィ... (たくさんの魔力が流れ込んできて、卵が暖かそうだ)",
+      streak: "コト...コト... (毎日魔力が注がれ、中で生命が育っている)",
+      emotion: "ピィ... (あなたの感情の揺らぎに反応して、卵が小さく光った)",
+      discovery: "コトッ！ (新しい魔力の刺激に驚いたように揺れた)"
+    },
+    1: {
+      length: "ピィッ！ (たっぷりの魔力をもらって、殻にヒビが入った！)",
+      streak: "ピィー！ (毎日の記録のおかげで、もうすぐ生まれそうだ！)",
+      emotion: "ピピィ... (あなたの強い思いを受け取り、熱を帯びている)",
+      discovery: "ピッ！ (未知の魔力に刺激され、少し殻が割れた！)"
+    },
+    2: {
+      length: "キュルル！ (あなたがたくさん書いた日記を、嬉しそうに読んでいる！)",
+      streak: "クウ... (毎日あなたに会えるのが嬉しいようだ)",
+      emotion: "キュン... (あなたが乗り越えた苦労を感じ取り、寄り添ってくれている)",
+      discovery: "キャッ！ (新しい出来事を知って、目を輝かせている！)"
+    },
+    3: {
+      length: "ギャオ！ (詳細な記録から、強い魔力を吸収して喜んでいる！)",
+      streak: "グルル... (毎日の継続が力になっている。頼もしそうにあなたを見ている)",
+      emotion: "ギャウ！ (辛いことを乗り越えたあなたを、力強く励ましている！)",
+      discovery: "ガウッ！ (あなたと共に新しい世界を知り、興奮しているようだ！)"
+    },
+    4: {
+      length: "ガァァ！ (その詳細な記録は素晴らしい。我が力となる！と言っているようだ)",
+      streak: "フン... (今日も続けるとはな。お前の根気を認めてやろう、という顔だ)",
+      emotion: "グルルォ... (その苦難を越えたお前は強い。私がついているぞ、と励ましている)",
+      discovery: "ガァッ！ (その探求心こそが我らを強くするのだ！)"
+    },
+    5: {
+      length: "グルルォォ！ (見事な記録だ。お前の歩みは確実に力となっている)",
+      streak: "（静かに頷き、あなたの毎日の継続を心から讃えている）",
+      emotion: "（優しく寄り添い、あなたの心の成長を誇りに思っているようだ）",
+      discovery: "グルォ... (その好奇心、忘れるでないぞ。共に歩もう)"
+    },
+    6: {
+      length: "「我が主よ、これほどの詳細な記録、見事な魔力の奔流だ。大儀である。」",
+      streak: "「日々の積み重ねこそが最強の魔法。そなたの継続、誇りに思うぞ。」",
+      emotion: "「その苦難を越え、さらに強くなったな。我が主よ、私はいつでもそなたと共にある。」",
+      discovery: "「ほう、また新たな知識を得たか。そなたの歩む道、我も共に楽しもうぞ。」"
+    }
+  };
+
+  const navItems = document.querySelectorAll('.nav-item');
+  const commentBox = document.getElementById('dragonCommentBox');
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const page = item.getAttribute('data-page');
+      if (page === 'stats') {
+        const stageData = commentsByStageAndType[currentStageIndex] || commentsByStageAndType[2];
+        const randomReason = expReasons[Math.floor(Math.random() * expReasons.length)];
+        const dragonWord = stageData[randomReason.type];
+        
+        if (commentBox) {
+          commentBox.innerHTML = `
+            <div style="margin-bottom: 15px; text-align: center; font-family: var(--font-display); color: var(--accent-gold); font-size: 0.95rem;">
+              ${randomReason.title}
+            </div>
+            <p class="accent-cyan" style="font-size:1.05rem; text-align:center; line-height: 1.6;">
+              ${dragonWord}
+            </p>
+          `;
+        }
+      }
+    });
+  });
+}
+
+// --- 炎の上の火の粉エフェクト (Canvas) ---
+function initPowerGraphCanvas() {
+  try {
+    const canvas = document.getElementById('powerCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const resize = () => {
+      const w = canvas.offsetWidth || canvas.parentElement.clientWidth || 300;
+      const h = canvas.offsetHeight || 140;
+      if (canvas.width !== w) canvas.width = w;
+      if (canvas.height !== h) canvas.height = h;
+    };
+    
+    window.addEventListener('resize', resize);
+    resize();
+
+    let time = 0;
+    const particles = [];
+    
+    for(let i=0; i<40; i++) {
+      particles.push({
+        x: Math.random() * (canvas.width || 300),
+        y: Math.random() * (canvas.height || 140),
+        size: Math.random() * 1.5 + 1,
+        speedY: Math.random() * 1.5 + 0.5,
+        speedX: (Math.random() - 0.5) * 1.5,
+        opacity: Math.random()
+      });
+    }
+
+    function animate() {
+      resize();
+      if (canvas.width === 0 || canvas.height === 0) {
+        requestAnimationFrame(animate);
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      time += 0.03;
+
+      const activeWidth = canvas.width * 0.85;
+
+      ctx.globalCompositeOperation = 'lighter';
+      particles.forEach(p => {
+        // 風に流されるような動き
+        p.y -= p.speedY + Math.random() * 0.5;
+        p.x += p.speedX + Math.sin(time * 2 + p.y * 0.05) * 1.5;
+        p.opacity -= 0.008;
+        
+        if(p.y < 0 || p.opacity <= 0) {
+          p.x = Math.random() * (canvas.width * (Math.min(currentExp, 10000) / 10000) || 10);
+          p.opacity = Math.random() * 0.6 + 0.4;
+          // 新しく生まれるときに速度をリセット
+          p.speedY = Math.random() * 2 + 0.5;
+          p.speedX = (Math.random() - 0.5) * 2;
+        }
+        
+        ctx.beginPath();
+        ctx.ellipse(p.x, p.y, p.size, p.size * 1.5, Math.PI / 6, 0, Math.PI * 2);
+        
+        // 画像の炎に合わせて、火の粉はオレンジ〜黄色にする
+        ctx.fillStyle = `rgba(255, 180, 50, ${p.opacity})`;
+        ctx.fill();
+        
+        // ほのかに光るグロー効果
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = 'rgba(255, 120, 0, 1)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      // 現在値の縦線 (7850などの固定値から動的値へ)
+      let progress = currentExp / 10000;
+      if (progress > 1) progress = 1;
+      if (progress < 0) progress = 0;
+      const dynActiveWidth = canvas.width * progress;
+
+      if (progress > 0) {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.beginPath();
+        ctx.moveTo(dynActiveWidth, canvas.height);
+        ctx.lineTo(dynActiveWidth, canvas.height * 0.25);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#00f0ff';
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// --- ステータスカードのシャッフル切り替え処理 ---
+function initStatusCards() {
+  const stack = document.getElementById('statusCardStack');
+  if (!stack) return;
+
+  stack.addEventListener('click', () => {
+    const cards = [
+      document.querySelector('.status-card[data-position="front"]'),
+      document.querySelector('.status-card[data-position="middle"]'),
+      document.querySelector('.status-card[data-position="back"]')
+    ];
+
+    if (!cards[0] || !cards[1] || !cards[2]) return;
+
+    // backのカードにアニメーション用のクラスを付与
+    const backCard = cards[2];
+    backCard.classList.add('shuffle-front');
+
+    // frontはmiddleへ、middleはbackへ
+    cards[0].dataset.position = 'middle';
+    cards[1].dataset.position = 'back';
+    
+    // アニメーション完了後にbackの要素をfrontにし、クラスを外す
+    setTimeout(() => {
+      backCard.classList.remove('shuffle-front');
+      backCard.dataset.position = 'front';
+    }, 700);
+  });
+}
+
+// --- レーダーチャートの描画 ---
+function initRadarChart() {
+  window.updateRadarChart = function(exp) {
+    const canvas = document.getElementById('radarCanvas');
+    if (!canvas) return;
+    
+    // Resize & reset
+    const cssSize = 150;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = cssSize * dpr;
+    canvas.height = cssSize * dpr;
+    canvas.style.width = `${cssSize}px`;
+    canvas.style.height = `${cssSize}px`;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, cssSize, cssSize);
+
+    const center = cssSize / 2;
+    const radius = cssSize / 2 - 25;
+
+    // EXPに基づいて擬似的にパラメータを算出
+    let baseVal = exp > 0 ? Math.min(exp / 1000, 1.0) : 0;
+    let data = [
+      Math.min(baseVal * 0.8, 1.0),
+      Math.min(baseVal * 0.6, 1.0),
+      Math.min(baseVal * 0.9, 1.0),
+      Math.min(baseVal * 0.5, 1.0),
+      Math.min(baseVal * 0.7, 1.0),
+      Math.min(baseVal * 0.4, 1.0)
+    ];
+    if (exp === 0) data = [0,0,0,0,0,0];
+
+    const labels = ['継続力', '表現力', '愛情', '探索', '魔力', '幸運'];
+
+    function drawPolygon(r, color, isFill) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i - Math.PI / 2;
+        const x = center + r * Math.cos(angle);
+        const y = center + r * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      if (isFill) {
+        ctx.fillStyle = color;
+        ctx.fill();
+      } else {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
+    // レーダーの目盛り
+    drawPolygon(radius, 'rgba(255, 255, 255, 0.1)', false);
+    drawPolygon(radius * 0.66, 'rgba(255, 255, 255, 0.1)', false);
+    drawPolygon(radius * 0.33, 'rgba(255, 255, 255, 0.1)', false);
+
+    // 軸線
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i - Math.PI / 2;
+      ctx.moveTo(center, center);
+      ctx.lineTo(center + radius * Math.cos(angle), center + radius * Math.sin(angle));
+    }
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.stroke();
+
+    // データの描画
+    if (exp > 0) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i - Math.PI / 2;
+        const valRadius = radius * data[i];
+        const x = center + valRadius * Math.cos(angle);
+        const y = center + valRadius * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(6, 182, 212, 0.5)';
+      ctx.fill();
+      ctx.strokeStyle = '#22d3ee';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    }
+
+    // ラベルの描画
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i - Math.PI / 2;
+      const textRadius = radius + 14;
+      const x = center + textRadius * Math.cos(angle);
+      const y = center + textRadius * Math.sin(angle);
+      ctx.fillText(labels[i], x, y);
+    }
+  };
+
+  // 初回描画
+  if (typeof currentExp !== 'undefined') {
+    window.updateRadarChart(currentExp);
+  } else {
+    window.updateRadarChart(0);
+  }
+}
+
+// --- Notifications ---
+function initNotifications() {
+  const toggle = document.getElementById('reminderToggle');
+  const timeInput = document.getElementById('reminderTime');
+  
+  if (!toggle || !timeInput) return;
+
+  toggle.checked = localStorage.getItem('reminderEnabled') === 'true';
+  timeInput.value = localStorage.getItem('reminderTime') || '21:00';
+
+  toggle.addEventListener('change', async (e) => {
+    if (e.target.checked) {
+      if ('Notification' in window) {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') {
+          e.target.checked = false;
+          alert('通知が許可されませんでした。ブラウザの設定をご確認ください。');
+        }
+      } else {
+        alert('このブラウザは通知に対応していません。');
+        e.target.checked = false;
+      }
+    }
+    localStorage.setItem('reminderEnabled', e.target.checked);
+  });
+
+  timeInput.addEventListener('change', (e) => {
+    localStorage.setItem('reminderTime', e.target.value);
+  });
+
+  // Check every minute
+  setInterval(() => {
+    if (localStorage.getItem('reminderEnabled') === 'true' && 'Notification' in window && Notification.permission === 'granted') {
+      const targetTime = localStorage.getItem('reminderTime') || '21:00';
+      const now = new Date();
+      const currentHM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      
+      if (currentHM === targetTime && localStorage.getItem('lastNotifiedTime') !== currentHM) {
+        localStorage.setItem('lastNotifiedTime', currentHM);
+        new Notification('竜の日記', {
+          body: '今日の日記を書く時間です！ドラゴンがあなたを待っています。',
+          icon: 'assets/ui/badge_first_step.png'
+        });
+      }
+    }
+  }, 30000); // 30 seconds
+}
