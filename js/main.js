@@ -811,6 +811,17 @@ document.getElementById('dragonContainer')?.addEventListener('click', (e) => {
 
       img.style.opacity = '1';
     }, 300);
+  } else {
+    // シングルタップ（またはダブルタップの1回目）時のエフェクト
+    if (currentStageIndex <= 1) {
+      const ripple = document.createElement('div');
+      ripple.className = 'mystic-ripple';
+      // コンテナ内の画像の背後に配置するため、先頭に追加するかCSSのz-indexで調整(z-index:-1にしてある)
+      document.getElementById('dragonContainer').appendChild(ripple);
+      setTimeout(() => {
+        ripple.remove();
+      }, 1200);
+    }
   }
   lastTapTime = now;
 });

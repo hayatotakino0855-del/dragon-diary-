@@ -1550,3 +1550,26 @@ input:checked + .slider:before { transform: translateX(20px); }
 .bring-to-front {
   z-index: 10000 !important;
 }
+
+/* --- Mystic Ripple Effect --- */
+.mystic-ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-cyan);
+  box-shadow: 0 0 20px var(--accent-cyan), inset 0 0 15px var(--accent-cyan);
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.4) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+  animation: mysticRippleAnim 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes mysticRippleAnim {
+  0% { width: 50px; height: 50px; opacity: 1; }
+  100% { width: 350px; height: 350px; opacity: 0; border-width: 0px; }
+}
+
