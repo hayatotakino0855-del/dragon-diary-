@@ -42,6 +42,7 @@ window.gisLoaded = function() {
         throw (tokenResponse);
       }
       // トークンを保存（有効期限も保存）
+      localStorage.setItem('hasLoggedInBefore', 'true');
       localStorage.setItem('gapi_access_token', tokenResponse.access_token);
       localStorage.setItem('gapi_token_expires_at', Date.now() + tokenResponse.expires_in * 1000);
       
@@ -71,6 +72,28 @@ function maybeEnableButtons() {
     if (authBtn) {
       authBtn.disabled = false;
       authBtn.textContent = 'Googleでログイン';
+    }
+
+    // --- 全自動再認証システム ---
+    if (localStorage.getItem('hasLoggedInBefore') === 'true') {
+      document.body.addEventListener('click', (e) => {
+        // 保存ボタン等は各々の処理で再認証するためスキップ
+        if (e.target.closest('#writeSubmitBtn') || e.target.closest('#detailSaveBtn')) return;
+        
+        const exp = localStorage.getItem('gapi_token_expires_at');
+        if (!isAuthorized || !exp || Date.now() > parseInt(exp)) {
+          tokenClient.callback = (resp) => {
+            if (resp.error !== undefined) return;
+            localStorage.setItem('gapi_access_token', resp.access_token);
+            localStorage.setItem('gapi_token_expires_at', Date.now() + resp.expires_in * 1000);
+            gapi.client.setToken({ access_token: resp.access_token });
+            isAuthorized = true;
+            updateAuthStatus();
+            fetchDiariesFromCalendar();
+          };
+          tokenClient.requestAccessToken({prompt: ''});
+        }
+      }, { once: true, capture: true });
     }
   }
 }
@@ -561,31 +584,52 @@ function openDiaryDetailModal(diary) {
     saveBtn.textContent = '保存中...';
     saveBtn.disabled = true;
 
-    try {
-      // カレンダーからイベント取得
-      const eventRes = await gapi.client.calendar.events.get({
-        calendarId: 'primary',
-        eventId: diary.id
-      });
-      const eventData = eventRes.result;
-      eventData.summary = newTitle;
-      eventData.description = newDesc;
+    const doUpdate = async () => {
+      try {
+        const eventRes = await gapi.client.calendar.events.get({
+          calendarId: 'primary',
+          eventId: diary.id
+        });
+        const eventData = eventRes.result;
+        eventData.summary = newTitle;
+        eventData.description = newDesc;
 
-      // 更新
-      await gapi.client.calendar.events.update({
-        calendarId: 'primary',
-        eventId: diary.id,
-        resource: eventData
-      });
+        await gapi.client.calendar.events.update({
+          calendarId: 'primary',
+          eventId: diary.id,
+          resource: eventData
+        });
 
-      overlay.remove();
-      // 再取得して画面更新
-      fetchDiariesFromCalendar();
-    } catch (e) {
-      console.error(e);
-      alert('保存に失敗しました。');
-      saveBtn.textContent = '保存';
-      saveBtn.disabled = false;
+        overlay.remove();
+        fetchDiariesFromCalendar();
+      } catch (e) {
+        console.error(e);
+        alert('保存に失敗しました。');
+        saveBtn.textContent = '保存';
+        saveBtn.disabled = false;
+      }
+    };
+
+    const exp = localStorage.getItem('gapi_token_expires_at');
+    if (!isAuthorized || !exp || Date.now() > parseInt(exp)) {
+      tokenClient.callback = async (resp) => {
+        if (resp.error !== undefined) {
+          alert('認証に失敗しました。設定からログインしてください。');
+          saveBtn.textContent = '保存';
+          saveBtn.disabled = false;
+          return;
+        }
+        localStorage.setItem('hasLoggedInBefore', 'true');
+        localStorage.setItem('gapi_access_token', resp.access_token);
+        localStorage.setItem('gapi_token_expires_at', Date.now() + resp.expires_in * 1000);
+        gapi.client.setToken({ access_token: resp.access_token });
+        isAuthorized = true;
+        updateAuthStatus();
+        await doUpdate();
+      };
+      tokenClient.requestAccessToken({prompt: ''});
+    } else {
+      doUpdate();
     }
   });
   overlay.addEventListener('click', (e) => {
@@ -947,45 +991,65 @@ function renderAchievements() {
 // 7. 日記の保存（カレンダーへ書き込み）
 // ==========================================
 window.saveDiaryToGoogle = async function(title, body, file) {
-  if (!isAuthorized) {
-    alert('先にGoogleアカウントを連携（ログイン）してください。');
-    return false;
-  }
-  try {
-    let description = body;
-    if (file) {
-      const folderId = await getOrCreateFolder('マイ日記');
-      const photoUrl = await uploadPhotoToDrive(file, folderId);
-      description += `\n\n【添付写真】\n${photoUrl}`;
-    }
-    const today = new Date();
-    const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-    const event = {
-      summary: title,
-      description: description,
-      start: { date: dateStr },
-      end: { date: new Date(today.getTime() + 86400000).toISOString().split('T')[0] }
+  return new Promise((resolve) => {
+    const doSave = async () => {
+      try {
+        let description = body;
+        if (file) {
+          const folderId = await getOrCreateFolder('マイ日記');
+          const photoUrl = await uploadPhotoToDrive(file, folderId);
+          description += `\n\n【添付写真】\n${photoUrl}`;
+        }
+        const today = new Date();
+        const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+        const event = {
+          summary: title,
+          description: description,
+          start: { date: dateStr },
+          end: { date: new Date(today.getTime() + 86400000).toISOString().split('T')[0] }
+        };
+        const result = await gapi.client.calendar.events.insert({
+          calendarId: 'primary',
+          resource: event
+        });
+
+        if (selectedWriteTags.length > 0 && result.result.id) {
+          const assignments = getTagAssignments();
+          assignments[result.result.id] = [...selectedWriteTags];
+          saveTagAssignments(assignments);
+          selectedWriteTags = [];
+        }
+
+        fetchDiariesFromCalendar();
+        resolve(true);
+      } catch (err) {
+        console.error('Save Diary Error:', err);
+        alert('保存中にエラーが発生しました。');
+        resolve(false);
+      }
     };
-    const result = await gapi.client.calendar.events.insert({
-      calendarId: 'primary',
-      resource: event
-    });
 
-    // 選択されたタグを紐付け
-    if (selectedWriteTags.length > 0 && result.result.id) {
-      const assignments = getTagAssignments();
-      assignments[result.result.id] = [...selectedWriteTags];
-      saveTagAssignments(assignments);
-      selectedWriteTags = [];
+    const exp = localStorage.getItem('gapi_token_expires_at');
+    if (!isAuthorized || !exp || Date.now() > parseInt(exp)) {
+      tokenClient.callback = async (resp) => {
+        if (resp.error !== undefined) {
+          alert('認証に失敗しました。設定からログインしてください。');
+          resolve(false);
+          return;
+        }
+        localStorage.setItem('hasLoggedInBefore', 'true');
+        localStorage.setItem('gapi_access_token', resp.access_token);
+        localStorage.setItem('gapi_token_expires_at', Date.now() + resp.expires_in * 1000);
+        gapi.client.setToken({ access_token: resp.access_token });
+        isAuthorized = true;
+        updateAuthStatus();
+        await doSave();
+      };
+      tokenClient.requestAccessToken({prompt: ''});
+    } else {
+      doSave();
     }
-
-    fetchDiariesFromCalendar();
-    return true;
-  } catch (err) {
-    console.error('Save Diary Error:', err);
-    alert('保存中にエラーが発生しました。');
-    return false;
-  }
+  });
 };
 
 // ==========================================
