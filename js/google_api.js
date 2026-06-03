@@ -361,10 +361,14 @@ function syncPlayerStats() {
   const elLastLogin = document.getElementById('displayLastLogin');
   if (elLastLogin) elLastLogin.textContent = lastLoginStr;
   
+  const vtStr = window.getVirtualTodayStr();
+  const [vy, vm, vd] = vtStr.split('-');
+  const virtualNow = new Date(vy, vm - 1, vd);
+
   const elTodayMonth = document.getElementById('todayMonthDisplay');
-  if (elTodayMonth) elTodayMonth.textContent = `${today.getMonth() + 1}月`;
+  if (elTodayMonth) elTodayMonth.textContent = `${virtualNow.getMonth() + 1}月`;
   const elTodayDay = document.getElementById('todayDayDisplay');
-  if (elTodayDay) elTodayDay.textContent = `${today.getDate()}日`;
+  if (elTodayDay) elTodayDay.textContent = `${virtualNow.getDate()}日`;
   const elTodayStreak = document.getElementById('todayStreakDisplay');
   if (elTodayStreak) elTodayStreak.textContent = streak;
 
