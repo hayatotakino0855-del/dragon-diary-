@@ -92,7 +92,7 @@ if (!localStorage.getItem('achieveResetV14')) {
 let maxUnlockedStage = 0; // 最初は第1段階(卵)のみ解放
 let currentStageIndex = 0; // 現在表示中のステージ
 let isEvolving = false; // 進化アニメーション中かどうかのフラグ
-const STAGE_THRESHOLDS = [0, 5000, 10000, 15000, 20000, 30000, 50000];
+const STAGE_THRESHOLDS = [0, 300, 1000, 3000, 8000, 20000, 50000];
 
 function gainExp(amount) {
   if (isEvolving) return; // 進化中はEXP取得（連打）を無視する

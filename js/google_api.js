@@ -237,6 +237,17 @@ let currentPage = 1;
 const ITEMS_PER_PAGE = 10;
 let activeTagFilter = null;
 
+window.getVirtualTodayStr = function() {
+  const now = new Date();
+  if (now.getHours() < 8) {
+    now.setDate(now.getDate() - 1);
+  }
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
 async function fetchDiariesFromCalendar() {
   if (!isAuthorized) return;
   const authBtn = document.getElementById('googleAuthButton');
@@ -294,23 +305,23 @@ function syncPlayerStats() {
   
   const totalDays = uniqueDates.size;
   // EXPはローカルで管理するため、カレンダー件数からの算出は行わない
-  // 連続ログイン日数の計算
+  // 連続記録（ストリーク）日数の計算
   let streak = 0;
-  const today = new Date();
-  today.setHours(0,0,0,0);
   
-  // 今日の日付から遡って連続しているかをチェック
-  let checkDate = new Date(today);
-  
-  // 日記の日付一覧をDateオブジェクトにしてソート (新しい順)
   const dateObjs = Array.from(uniqueDates).map(ds => {
     const [y, m, d] = ds.split('-');
     return new Date(y, m - 1, d);
   }).sort((a, b) => b - a);
 
   if (dateObjs.length > 0) {
-    // 最新の日記が今日か昨日ならストリーク計算開始
-    const diffDays = Math.floor((today - dateObjs[0]) / 86400000);
+    // 基準日（仮想の今日）を取得
+    const todayStr = window.getVirtualTodayStr();
+    const [ty, tm, td] = todayStr.split('-');
+    const virtualToday = new Date(ty, tm - 1, td);
+    virtualToday.setHours(0,0,0,0);
+    
+    // 最新の日記が「基準日」または「基準日の前日」ならストリーク計算開始
+    const diffDays = Math.floor((virtualToday - dateObjs[0]) / 86400000);
     if (diffDays <= 1) {
       streak = 1;
       let prevDate = dateObjs[0];
@@ -990,7 +1001,7 @@ function renderAchievements() {
 // ==========================================
 // 7. 日記の保存（カレンダーへ書き込み）
 // ==========================================
-window.saveDiaryToGoogle = async function(title, body, file) {
+window.saveDiaryToGoogle = async function(title, body, file, targetDateStr) {
   return new Promise((resolve) => {
     const doSave = async () => {
       try {
@@ -1000,13 +1011,14 @@ window.saveDiaryToGoogle = async function(title, body, file) {
           const photoUrl = await uploadPhotoToDrive(file, folderId);
           description += `\n\n【添付写真】\n${photoUrl}`;
         }
-        const today = new Date();
-        const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+        const startDate = new Date(targetDateStr);
+        const endDate = new Date(startDate.getTime() + 86400000);
+        const endStr = endDate.getFullYear() + '-' + String(endDate.getMonth() + 1).padStart(2, '0') + '-' + String(endDate.getDate()).padStart(2, '0');
         const event = {
           summary: title,
           description: description,
-          start: { date: dateStr },
-          end: { date: new Date(today.getTime() + 86400000).toISOString().split('T')[0] }
+          start: { date: targetDateStr },
+          end: { date: endStr }
         };
         const result = await gapi.client.calendar.events.insert({
           calendarId: 'primary',
@@ -1063,11 +1075,10 @@ document.addEventListener('DOMContentLoaded', () => {
     authBtn.onclick = handleAuthClick;
   }
 
-  // 日記作成画面の日付を今日にセット
-  const writeDate = document.getElementById('writeDate');
-  if (writeDate) {
-    const now = new Date();
-    writeDate.textContent = `${now.getMonth() + 1}月${now.getDate()}日の日記`;
+  // 日記作成画面の日付を今日（基準日）にセット
+  const writeDateInput = document.getElementById('writeDateInput');
+  if (writeDateInput) {
+    writeDateInput.value = window.getVirtualTodayStr();
   }
 
   // 写真添付機能
@@ -1114,7 +1125,8 @@ document.addEventListener('DOMContentLoaded', () => {
       saveBtn.textContent = '保存中...';
       saveBtn.disabled = true;
 
-      const success = await window.saveDiaryToGoogle(title, body, file);
+      const targetDateStr = document.getElementById('writeDateInput').value || window.getVirtualTodayStr();
+      const success = await window.saveDiaryToGoogle(title, body, file, targetDateStr);
 
       saveBtn.textContent = originalText;
       saveBtn.disabled = false;
@@ -1125,7 +1137,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (removeBtn) removeBtn.click();
         const homeBtn = document.querySelector('[data-page="home"]');
         if (homeBtn) homeBtn.click();
-        if (typeof window.gainExp === 'function') window.gainExp(50);
+
+        // 対象日が基準日の場合のみ経験値付与
+        if (targetDateStr === window.getVirtualTodayStr() && typeof window.gainExp === 'function') {
+          let exp = 20; // 基本経験値
+          const textLen = body.replace(/\s+/g, '').length;
+          let textBonus = Math.floor(textLen / 100) * 10;
+          if (textBonus > 200) textBonus = 200;
+          exp += textBonus;
+
+          const streakText = document.getElementById('todayStreakDisplay').textContent || '0';
+          const currentStreak = parseInt(streakText, 10);
+          
+          if (currentStreak >= 100) exp += 300;
+          else if (currentStreak >= 30) exp += 100;
+          else if (currentStreak >= 14) exp += 50;
+          else if (currentStreak >= 7) exp += 30;
+          else if (currentStreak >= 3) exp += 10;
+
+          window.gainExp(exp);
+        }
       }
     });
   }
