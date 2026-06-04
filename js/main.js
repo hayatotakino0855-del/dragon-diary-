@@ -862,8 +862,8 @@ function initStatBarAnimation() {
 
 // --- ドラゴンの段階を切り替える（デモ用） ---
 const DRAGON_STAGES = [
-  { image: 'assets/dragons/stage1_egg.png',       name: '神秘の卵',   stage: '第1段階', animation: 'eggIdle' },
-  { image: 'assets/dragons/stage2_egg.png',        name: '覚醒の卵',   stage: '第2段階', animation: 'eggWobble' },
+  { image: 'assets/dragons/stage1_egg.png',       name: '神秘の卵',   stage: '第1段階', animation: 'none' },
+  { image: 'assets/dragons/stage2_egg.png',        name: '覚醒の卵',   stage: '第2段階', animation: 'none' },
   { image: 'assets/dragons/stage3_hatchling.png',  name: '幼竜',      stage: '第3段階', animation: 'dragonBreathing' },
   { image: 'assets/dragons/stage4_young.png',      name: '少年竜',    stage: '第4段階', animation: 'dragonBreathing' },
   { image: 'assets/dragons/stage5_juvenile.png',   name: '青年竜',    stage: '第5段階', animation: 'dragonFloat' },
