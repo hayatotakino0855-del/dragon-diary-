@@ -141,7 +141,7 @@ body {
   width: 100%;
   height: 100%;
   position: absolute;
-  top: 8px; /* さらに下にずらして動画と合わせる */
+  top: -15px; /* ドラゴン本体の画像を上にずらす */
   left: 0;
   object-fit: contain;
   animation: dragonBreathing 4s ease-in-out infinite;

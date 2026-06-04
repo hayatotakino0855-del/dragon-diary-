@@ -176,8 +176,15 @@ window.retroGrantJuneExp = function() {
     if (typeof gainExp === 'function') {
       gainExp(totalRetroExp);
     }
-    localStorage.setItem('retroExpGrantedV40', 'true');
+    localStorage.setItem('retroExpGrantedV41', 'true');
     console.log(`[遡及EXP] 6月1〜3日分: ${totalRetroExp} EXP を付与しました`);
+    if (typeof window.showInAppNotification === 'function') {
+      window.showInAppNotification('✨過去の記録を還元しました', `6月1日〜3日の日記から ${totalRetroExp} EXPを獲得しました！`);
+    }
+  } else {
+    // 該当する日記が1件も見つからなかった場合
+    console.log('[遡及EXP] 6月1〜3日の日記は見つかりませんでした。');
+    localStorage.setItem('retroExpGrantedV41', 'true');
   }
 };
 
@@ -1222,7 +1229,7 @@ function initRadarChart() {
       // 3. 愛情: 日記詳細閲覧 + ドラゴンタップ (合計50ptでMax)
       const views = parseInt(localStorage.getItem('diaryViewCount') || '0', 10);
       const taps = parseInt(localStorage.getItem('dragonTapCount') || '0', 10);
-      vAffection = Math.min((views * 1 + taps * 1.0) / 50, 1.0);
+      vAffection = Math.min((views * 1 + taps * 5.0) / 50, 1.0); // 10回タップで最大値になるように調整
 
       // 4. 探索: タグ種類 + 写真添付 (合計100ptでMax)
       let photoCount = 0;
