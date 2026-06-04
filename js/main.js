@@ -132,9 +132,12 @@ window.retroGrantJuneExp = function() {
   
   // 日付文字列(YYYY-MM-DD)を取得するヘルパー
   const getDateStr = (d) => {
-    if (d.start && d.start.date) return d.start.date;
-    if (d.start && d.start.dateTime) return d.start.dateTime.split('T')[0];
-    return null;
+    if (!d.start) return null;
+    let dateObj = d.start.date || d.start.dateTime;
+    if (!dateObj) return null;
+    // タイムゾーンや文字列形式の差異を吸収するためDate型にして比較しやすい形にする
+    const dt = new Date(dateObj);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
   };
 
   const juneDates = ['2026-06-01', '2026-06-02', '2026-06-03'];

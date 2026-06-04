@@ -83,7 +83,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* 中央揃えから上揃えに変更 */
+  padding-top: 25px; /* 上からの余白で位置を調整 */
   overflow: visible; /* 見切れないように */
   background: transparent;
   border-bottom: 2px solid rgba(0, 240, 255, 0.6);
@@ -118,8 +119,8 @@ body {
   height: 200px;
   touch-action: manipulation; /* スマホでのダブルタップズームを防止し、JSの判定を安定させる */
   -webkit-tap-highlight-color: transparent;
-  margin-top: 20px;
-  transform: translateY(-20px); /* ドラゴンの位置を明確に上げる */
+  margin-top: 0px; /* marginをリセット */
+  transform: none; /* transformもリセット */
 }
 
 .dragon-container::before {
@@ -141,7 +142,7 @@ body {
   width: 100%;
   height: 100%;
   position: absolute;
-  top: -15px; /* ドラゴン本体の画像を上にずらす */
+  top: 8px; /* 元に戻す */
   left: 0;
   object-fit: contain;
   animation: dragonBreathing 4s ease-in-out infinite;

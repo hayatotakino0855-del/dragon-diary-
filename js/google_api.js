@@ -377,6 +377,10 @@ function syncPlayerStats() {
   // 6月1〜3日の遡及EXP付与（初回のみ）
   if (typeof window.retroGrantJuneExp === 'function') {
     window.retroGrantJuneExp();
+    // 遡及EXP付与でレベルが上がった場合などに備え、実績も再チェックする
+    if (typeof checkAchievements === 'function') {
+      checkAchievements();
+    }
   }
 }
 
