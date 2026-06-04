@@ -977,6 +977,12 @@ function checkAchievements() {
       }, index * 4500); // 複数ある場合はずらして表示
     });
   }
+  
+  // UIの更新 (実績数)
+  const elDays = document.getElementById('displayTotalDays');
+  if (elDays) {
+    elDays.innerHTML = `${unlocked.length}<span class="habit-unit">個</span>`;
+  }
 }
 
 function renderAchievements() {
