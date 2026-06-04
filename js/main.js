@@ -502,10 +502,20 @@ function initDragonTap() {
 
     if (currentStageIndex === 0 || currentStageIndex === 1) {
       // 卵の段階（第1、第2段階）は横に揺れる
-      dragonImage.style.animation = `eggShake 0.4s ease, ${baseAnim} 4s ease-in-out 0.4s infinite`;
+      dragonImage.style.animation = `eggShake 0.5s ease-in-out, ${baseAnim} 4s ease-in-out 0.5s infinite`;
     } else {
       // ドラゴンになったらバウンスする
       dragonImage.style.animation = `dragonTap 0.6s ease, ${baseAnim} 4s ease-in-out 0.6s infinite`;
+    }
+
+    // タップ回数を記録して愛情をアップさせる
+    let taps = parseInt(localStorage.getItem('dragonTapCount') || '0', 10);
+    taps++;
+    localStorage.setItem('dragonTapCount', taps);
+    
+    // レーダーチャートを即座に更新する
+    if (typeof window.updateRadarChart === 'function') {
+      window.updateRadarChart(currentExp);
     }
 
     // タップ時にパーティクルを一時的に増やす
