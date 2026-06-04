@@ -196,7 +196,9 @@ function gainExp(amount) {
   
   currentExp += amount;
   localStorage.setItem('dragonDiaryExp', currentExp); // 経験値をローカル保存
-  playerLevel = Math.floor(currentExp / 5000) + 1;
+  // レベル1=0, レベル2=100, レベル3=300, レベル4=600 ...というように
+  // L = 1/2 + sqrt(1/4 + 2 * exp / 100) を使って計算
+  playerLevel = Math.floor((1 + Math.sqrt(1 + 8 * currentExp / 100)) / 2);
   
   const levelDisplay = document.getElementById('playerLevelDisplay');
   if (levelDisplay) levelDisplay.textContent = `プレイヤーレベル: ${playerLevel}`;
@@ -1216,20 +1218,21 @@ function initRadarChart() {
     // 実際の行動データに基づいてパラメーターを算出
     let vConsistency = 0, vExpressiveness = 0, vAffection = 0, vExploration = 0, vMagic = 0, vLuck = 0;
 
-    if (window.allDiaries && window.allDiaries.length > 0) {
-      // 1. 継続力: ストリーク (30日でMax)
-      const streakText = document.getElementById('todayStreakDisplay')?.textContent || '0';
-      let streak = parseInt(streakText, 10) || 0;
-      // ご要望により4日で計算（実際のストリークが4未満の場合は4として扱う）
-      if (streak < 4) streak = 4;
-      vConsistency = Math.min(streak / 30, 1.0);
+    const diaries = window.allDiaries || [];
 
-      // 2. 表現力: 平均文字数 300文字からスタート
-      let totalLen = 0;
-      window.allDiaries.forEach(d => {
-        totalLen += (d.description || '').replace(/\s+/g, '').length;
-      });
-      let avgLen = window.allDiaries.length > 0 ? (totalLen / window.allDiaries.length) : 0;
+    // 1. 継続力: ストリーク (30日でMax)
+    const streakText = document.getElementById('todayStreakDisplay')?.textContent || '0';
+    let streak = parseInt(streakText, 10) || 0;
+    // ご要望により4日で計算（実際のストリークが4未満の場合は4として扱う）
+    if (streak < 4) streak = 4;
+    vConsistency = Math.min(streak / 30, 1.0);
+
+    // 2. 表現力: 平均文字数 300文字からスタート
+    let totalLen = 0;
+    diaries.forEach(d => {
+      totalLen += (d.description || '').replace(/\s+/g, '').length;
+    });
+    let avgLen = diaries.length > 0 ? (totalLen / diaries.length) : 0;
       if (avgLen < 300) avgLen = 300;
       // 500文字でMaxとする
       vExpressiveness = Math.min(avgLen / 500, 1.0);
@@ -1245,7 +1248,6 @@ function initRadarChart() {
       // 5. 魔力: 経験値(exp)で計算 (ご要望により現在のEXPを利用、上限を調整)
       // 魔力は1000EXPでMaxにする
       vMagic = Math.min(exp / 1000, 1.0);
-    }
 
     // 6. 幸運: 1日ごとのランダム値 (0.3〜1.0)
     const todayStr = typeof window.getVirtualTodayStr === 'function' ? window.getVirtualTodayStr() : new Date().toDateString();
