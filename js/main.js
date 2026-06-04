@@ -1455,6 +1455,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state !== YT.PlayerState.PLAYING && state !== YT.PlayerState.BUFFERING) {
         ytPlayer.playVideo();
       }
+    }
+  });
+
   // Radar card long press (2 seconds) to flip
   const cardRadar = document.getElementById('cardRadar');
   if (cardRadar) {
