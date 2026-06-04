@@ -501,12 +501,11 @@ window.handleDragonTap = function() {
     // 卵の段階（第1、第2段階）は横に揺れる
     anim = dragonImage.animate([
       { transform: 'rotate(0deg)' },
-      { transform: 'rotate(15deg)', offset: 0.25 },
-      { transform: 'rotate(-15deg)', offset: 0.5 },
-      { transform: 'rotate(8deg)', offset: 0.75 },
+      { transform: 'rotate(6deg)', offset: 0.25 },
+      { transform: 'rotate(-6deg)', offset: 0.75 },
       { transform: 'rotate(0deg)' }
     ], {
-      duration: 400,
+      duration: 1500,
       easing: 'ease-in-out'
     });
   } else {
@@ -1223,7 +1222,8 @@ function initRadarChart() {
       // 3. 愛情: 日記詳細閲覧 + ドラゴンタップ
       const views = parseInt(localStorage.getItem('diaryViewCount') || '0', 10);
       const taps = parseInt(localStorage.getItem('dragonTapCount') || '0', 10);
-      vAffection = Math.min((views * 1 + taps * 5.0) / 50, 1.0);
+      // タップ1回につき0.5、詳細閲覧1回につき1.0とし、合計300でMAXにするなど基準を引き上げる
+      vAffection = Math.min((views * 1.0 + taps * 0.5) / 300, 1.0);
 
       // 4. 探索: 現在0
       vExploration = 0;
