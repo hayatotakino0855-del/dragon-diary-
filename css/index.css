@@ -253,6 +253,14 @@ body {
   100% { transform: rotate(0deg); }
 }
 
+.egg-shaking {
+  animation: eggShake 0.5s ease-in-out !important;
+}
+
+.dragon-tapping {
+  animation: dragonTap 0.6s ease !important;
+}
+
 /* Particle effects */
 .dragon-particles {
   position: absolute;

@@ -501,15 +501,15 @@ function initDragonTap() {
     const baseAnim = stageInfo.animation || 'dragonBreathing';
 
     if (currentStageIndex === 0 || currentStageIndex === 1) {
-      // 卵の段階（第1、第2段階）は横に揺れる
-      dragonImage.style.animation = `eggShake 0.5s ease-in-out`;
+      dragonImage.classList.add('egg-shaking');
       setTimeout(() => {
+        dragonImage.classList.remove('egg-shaking');
         dragonImage.style.animation = `${baseAnim} 4s ease-in-out infinite`;
       }, 500);
     } else {
-      // ドラゴンになったらバウンスする
-      dragonImage.style.animation = `dragonTap 0.6s ease`;
+      dragonImage.classList.add('dragon-tapping');
       setTimeout(() => {
+        dragonImage.classList.remove('dragon-tapping');
         dragonImage.style.animation = `${baseAnim} 4s ease-in-out infinite`;
       }, 600);
     }
