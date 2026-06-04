@@ -1451,5 +1451,30 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+
+  // Radar card long press (2 seconds) to flip
+  const cardRadar = document.getElementById('cardRadar');
+  if (cardRadar) {
+    let pressTimer;
+    const startPress = (e) => {
+      // スクロール時の誤作動を防ぐため、ここでは preventDefault はしないでおくが長押しタイマーはセットする
+      pressTimer = setTimeout(() => {
+        cardRadar.classList.toggle('flipped');
+      }, 2000);
+    };
+    const cancelPress = () => {
+      clearTimeout(pressTimer);
+    };
+
+    cardRadar.addEventListener('mousedown', startPress);
+    cardRadar.addEventListener('touchstart', startPress, { passive: true });
+    
+    cardRadar.addEventListener('mouseup', cancelPress);
+    cardRadar.addEventListener('mouseleave', cancelPress);
+    cardRadar.addEventListener('touchend', cancelPress);
+    cardRadar.addEventListener('touchcancel', cancelPress);
+    // スクロール中もキャンセルする
+    cardRadar.addEventListener('touchmove', cancelPress, { passive: true });
+  }
 });
 
