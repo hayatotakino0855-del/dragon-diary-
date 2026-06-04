@@ -502,10 +502,16 @@ function initDragonTap() {
 
     if (currentStageIndex === 0 || currentStageIndex === 1) {
       // 卵の段階（第1、第2段階）は横に揺れる
-      dragonImage.style.animation = `eggShake 0.5s ease-in-out, ${baseAnim} 4s ease-in-out 0.5s infinite`;
+      dragonImage.style.animation = `eggShake 0.5s ease-in-out`;
+      setTimeout(() => {
+        dragonImage.style.animation = `${baseAnim} 4s ease-in-out infinite`;
+      }, 500);
     } else {
       // ドラゴンになったらバウンスする
-      dragonImage.style.animation = `dragonTap 0.6s ease, ${baseAnim} 4s ease-in-out 0.6s infinite`;
+      dragonImage.style.animation = `dragonTap 0.6s ease`;
+      setTimeout(() => {
+        dragonImage.style.animation = `${baseAnim} 4s ease-in-out infinite`;
+      }, 600);
     }
 
     // タップ回数を記録して愛情をアップさせる
