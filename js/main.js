@@ -493,25 +493,29 @@ function initDragonTap() {
   if (!dragonContainer || !dragonImage) return;
 
   dragonContainer.addEventListener('click', () => {
-    dragonImage.style.animation = 'none';
-    dragonImage.offsetHeight; // reflow
-    
-    // 現在のステージ設定を取得
-    const stageInfo = typeof DRAGON_STAGES !== 'undefined' ? DRAGON_STAGES[currentStageIndex] : { animation: 'dragonBreathing' };
-    const baseAnim = stageInfo.animation || 'dragonBreathing';
-
     if (currentStageIndex === 0 || currentStageIndex === 1) {
-      dragonImage.classList.add('egg-shaking');
-      setTimeout(() => {
-        dragonImage.classList.remove('egg-shaking');
-        dragonImage.style.animation = `${baseAnim} 4s ease-in-out infinite`;
-      }, 500);
+      // 卵の段階（第1、第2段階）は横に揺れる
+      dragonImage.animate([
+        { transform: 'rotate(0deg)' },
+        { transform: 'rotate(15deg)', offset: 0.25 },
+        { transform: 'rotate(-15deg)', offset: 0.5 },
+        { transform: 'rotate(8deg)', offset: 0.75 },
+        { transform: 'rotate(0deg)' }
+      ], {
+        duration: 400,
+        easing: 'ease-in-out'
+      });
     } else {
-      dragonImage.classList.add('dragon-tapping');
-      setTimeout(() => {
-        dragonImage.classList.remove('dragon-tapping');
-        dragonImage.style.animation = `${baseAnim} 4s ease-in-out infinite`;
-      }, 600);
+      // ドラゴンになったらバウンスする
+      dragonImage.animate([
+        { transform: 'scale(1)' },
+        { transform: 'scale(0.9) translateY(10px)', offset: 0.4 },
+        { transform: 'scale(1.05) translateY(-5px)', offset: 0.7 },
+        { transform: 'scale(1)' }
+      ], {
+        duration: 500,
+        easing: 'ease-out'
+      });
     }
 
     // タップ回数を記録して愛情をアップさせる
