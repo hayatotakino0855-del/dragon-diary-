@@ -485,15 +485,21 @@ function initDragonParticles() {
   }
 }
 
-// --- ドラゴンをタップした時のリアクション ---
 window.handleDragonTap = function() {
   const dragonContainer = document.getElementById('dragonContainer');
   const dragonImage = document.getElementById('dragonImage');
   if (!dragonContainer || !dragonImage) return;
 
+  // Web Animations APIがCSS Animationに負けることがあるため、CSS Animationを一時的に無効化する
+  const currentInlineAnimation = dragonImage.style.animation;
+  dragonImage.style.animation = 'none';
+  // 無効化を適用させるためのリフロー
+  void dragonImage.offsetHeight;
+
+  let anim;
   if (currentStageIndex === 0 || currentStageIndex === 1) {
     // 卵の段階（第1、第2段階）は横に揺れる
-    dragonImage.animate([
+    anim = dragonImage.animate([
       { transform: 'rotate(0deg)' },
       { transform: 'rotate(15deg)', offset: 0.25 },
       { transform: 'rotate(-15deg)', offset: 0.5 },
@@ -505,7 +511,7 @@ window.handleDragonTap = function() {
     });
   } else {
     // ドラゴンになったらバウンスする
-    dragonImage.animate([
+    anim = dragonImage.animate([
       { transform: 'scale(1)' },
       { transform: 'scale(0.9) translateY(10px)', offset: 0.4 },
       { transform: 'scale(1.05) translateY(-5px)', offset: 0.7 },
@@ -515,6 +521,11 @@ window.handleDragonTap = function() {
       easing: 'ease-out'
     });
   }
+
+  // アニメーションが完了したら元のCSS Animationを復元する
+  anim.onfinish = () => {
+    dragonImage.style.animation = currentInlineAnimation;
+  };
 
   // タップ回数を記録して愛情をアップさせる
   let taps = parseInt(localStorage.getItem('dragonTapCount') || '0', 10);

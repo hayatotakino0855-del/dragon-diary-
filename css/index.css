@@ -79,13 +79,16 @@ body {
    ============================================ */
 .dragon-area {
   position: relative;
-  height: var(--dragon-area-height);
+  /* heightをautoにし、中身に合わせて下線の位置が自動調整されるようにする */
+  height: auto;
+  min-height: 240px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start; /* 中央揃えから上揃えに変更 */
-  padding-top: 25px; /* 上からの余白で位置を調整 */
-  overflow: visible; /* 見切れないように */
+  justify-content: center;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  overflow: visible;
   background: transparent;
   border-bottom: 2px solid rgba(0, 240, 255, 0.6);
   box-shadow: 0 10px 30px rgba(0, 240, 255, 0.15);
@@ -384,7 +387,12 @@ body {
   margin-bottom: 2px;
   filter: drop-shadow(0 0 5px rgba(0, 240, 255, 0.3));
 }
-.achieve-badge span { font-size: 0.6rem; color: var(--text-secondary); }
+.achieve-badge span { 
+  font-size: 0.65rem; 
+  color: var(--text-secondary); 
+  text-align: center;
+  line-height: 1.2;
+}
 
 /* ============================================
    Player Info
@@ -392,11 +400,22 @@ body {
 .player-info-section {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 24px;
-  padding: 0 10px;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 240, 255, 0.1);
+}
+
+.player-text {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.player-magic {
+  font-size: 0.9rem;
+  font-weight: bold;
 }
 
 .player-text div { margin-bottom: 4px; }
