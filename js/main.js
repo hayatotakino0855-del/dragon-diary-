@@ -94,6 +94,84 @@ let currentStageIndex = 0; // 現在表示中のステージ
 let isEvolving = false; // 進化アニメーション中かどうかのフラグ
 const STAGE_THRESHOLDS = [0, 300, 1000, 3000, 8000, 20000, 50000];
 
+// --- 称号システム（レベル連動） ---
+const PLAYER_TITLES = [
+  { minLevel: 1,  title: '見習い記録者' },
+  { minLevel: 2,  title: '駆け出しの書記' },
+  { minLevel: 3,  title: '竜卵の守り人' },
+  { minLevel: 5,  title: '蒼穹の龍使い' },
+  { minLevel: 7,  title: '魔導の書記官' },
+  { minLevel: 10, title: '銀翼の年代記作家' },
+  { minLevel: 15, title: '黄昏の竜騎士' },
+  { minLevel: 20, title: '深淵の賢者' },
+  { minLevel: 30, title: '星読みの大魔導士' },
+  { minLevel: 50, title: '伝説の竜王' },
+];
+
+function updatePlayerTitle(level) {
+  let title = PLAYER_TITLES[0].title;
+  for (let i = PLAYER_TITLES.length - 1; i >= 0; i--) {
+    if (level >= PLAYER_TITLES[i].minLevel) {
+      title = PLAYER_TITLES[i].title;
+      break;
+    }
+  }
+  const el = document.getElementById('display-player-title');
+  if (el) el.textContent = title;
+}
+
+// --- 6月1〜3日の遡及EXP初期化 ---
+// 一度だけ実行し、過去の日記データからEXPを計算して付与する
+window.retroGrantJuneExp = function() {
+  if (localStorage.getItem('retroExpGrantedV35')) return; // 既に実行済み
+
+  // allDiariesが読み込まれるまで待つ必要があるため、google_api.jsのsyncPlayerStats後に呼ばれる
+  if (!window.allDiaries || window.allDiaries.length === 0) return;
+
+  let totalRetroExp = 0;
+  const juneDates = ['2026-06-01', '2026-06-02', '2026-06-03'];
+  
+  // 日付順にソート（ストリーク計算のため）
+  const juneEntries = window.allDiaries.filter(d => 
+    d.start && d.start.date && juneDates.includes(d.start.date)
+  ).sort((a, b) => new Date(a.start.date) - new Date(b.start.date));
+
+  // 各日付ごとに1件だけEXP計算（同一日に複数件あっても1回分）
+  const processedDates = new Set();
+  let streakCount = 0;
+
+  juneEntries.forEach(diary => {
+    const dateStr = diary.start.date;
+    if (processedDates.has(dateStr)) return;
+    processedDates.add(dateStr);
+    streakCount++;
+
+    let exp = 20; // 基本EXP
+    const textLen = (diary.description || '').replace(/\s+/g, '').length;
+    let textBonus = Math.floor(textLen / 100) * 10;
+    if (textBonus > 200) textBonus = 200;
+    exp += textBonus;
+
+    // ストリークボーナス
+    if (streakCount >= 100) exp += 300;
+    else if (streakCount >= 30) exp += 100;
+    else if (streakCount >= 14) exp += 50;
+    else if (streakCount >= 7) exp += 30;
+    else if (streakCount >= 3) exp += 10;
+
+    totalRetroExp += exp;
+  });
+
+  if (totalRetroExp > 0) {
+    // 現在のEXPに加算
+    if (typeof gainExp === 'function') {
+      gainExp(totalRetroExp);
+    }
+    localStorage.setItem('retroExpGrantedV35', 'true');
+    console.log(`[遡及EXP] 6月1〜3日分: ${totalRetroExp} EXP を付与しました`);
+  }
+};
+
 function gainExp(amount) {
   if (isEvolving) return; // 進化中はEXP取得（連打）を無視する
   
@@ -103,6 +181,7 @@ function gainExp(amount) {
   
   const levelDisplay = document.getElementById('playerLevelDisplay');
   if (levelDisplay) levelDisplay.textContent = `プレイヤーレベル: ${playerLevel}`;
+  updatePlayerTitle(playerLevel);
   const expDisplay = document.getElementById('powerValueDisplay');
   if (expDisplay) expDisplay.innerHTML = `${currentExp} <span style="font-size: 0.6em; color: var(--text-muted);">EXP</span>`;
 

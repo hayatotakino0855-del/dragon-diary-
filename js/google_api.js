@@ -373,6 +373,11 @@ function syncPlayerStats() {
   if (elTodayStreak) elTodayStreak.textContent = streak;
 
   // 過去の日記からの自動EXP付与は行わない（同期でのいきなり成長を防止）
+
+  // 6月1〜3日の遡及EXP付与（初回のみ）
+  if (typeof window.retroGrantJuneExp === 'function') {
+    window.retroGrantJuneExp();
+  }
 }
 
 function applyFilters() {
