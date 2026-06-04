@@ -357,6 +357,9 @@ function syncPlayerStats() {
   const unlocked = JSON.parse(localStorage.getItem('unlockedAchievements') || '[]');
   if (elDays) elDays.innerHTML = `${unlocked.length}<span class="habit-unit">個</span>`;
   
+  // ご要望により、UI上の表示も「連続記録日4日」に固定（実態が4未満の場合）
+  if (streak < 4) streak = 4;
+  
   const elStreak = document.getElementById('displayStreakDays');
   if (elStreak) elStreak.innerHTML = `🔥${streak}<span class="habit-unit">日</span>`;
   

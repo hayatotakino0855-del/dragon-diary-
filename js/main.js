@@ -1219,40 +1219,32 @@ function initRadarChart() {
     if (window.allDiaries && window.allDiaries.length > 0) {
       // 1. 継続力: ストリーク (30日でMax)
       const streakText = document.getElementById('todayStreakDisplay')?.textContent || '0';
-      const streak = parseInt(streakText, 10) || 0;
+      let streak = parseInt(streakText, 10) || 0;
+      // ご要望により4日で計算（実際のストリークが4未満の場合は4として扱う）
+      if (streak < 4) streak = 4;
       vConsistency = Math.min(streak / 30, 1.0);
 
-      // 2. 表現力: 平均文字数 (平均200文字でMax)
+      // 2. 表現力: 平均文字数 300文字からスタート
       let totalLen = 0;
       window.allDiaries.forEach(d => {
         totalLen += (d.description || '').replace(/\s+/g, '').length;
       });
-      vExpressiveness = Math.min((totalLen / window.allDiaries.length) / 200, 1.0);
+      let avgLen = window.allDiaries.length > 0 ? (totalLen / window.allDiaries.length) : 0;
+      if (avgLen < 300) avgLen = 300;
+      // 500文字でMaxとする
+      vExpressiveness = Math.min(avgLen / 500, 1.0);
 
-      // 3. 愛情: 日記詳細閲覧 + ドラゴンタップ (合計50ptでMax)
+      // 3. 愛情: 日記詳細閲覧 + ドラゴンタップ
       const views = parseInt(localStorage.getItem('diaryViewCount') || '0', 10);
       const taps = parseInt(localStorage.getItem('dragonTapCount') || '0', 10);
-      vAffection = Math.min((views * 1 + taps * 5.0) / 50, 1.0); // 10回タップで最大値になるように調整
+      vAffection = Math.min((views * 1 + taps * 5.0) / 50, 1.0);
 
-      // 4. 探索: タグ種類 + 写真添付 (合計100ptでMax)
-      let photoCount = 0;
-      window.allDiaries.forEach(d => {
-        if ((d.description || '').includes('【添付写真】')) photoCount++;
-      });
-      let tagsCount = typeof window.getTags === 'function' ? window.getTags().length : 0;
-      vExploration = Math.min((tagsCount * 10 + photoCount * 10) / 100, 1.0);
+      // 4. 探索: 現在0
+      vExploration = 0;
 
-      // 5. 魔力: 総合EXP + 深夜の記録回数
-      let nightCount = 0;
-      window.allDiaries.forEach(d => {
-        if (d.created) {
-          const h = new Date(d.created).getHours();
-          if (h >= 22 || h < 4) nightCount++;
-        }
-      });
-      const magicExp = Math.min(exp / 50000, 1.0);
-      const magicNight = Math.min(nightCount / 20, 1.0);
-      vMagic = Math.min(magicExp * 0.5 + magicNight * 0.5, 1.0);
+      // 5. 魔力: 経験値(exp)で計算 (ご要望により現在のEXPを利用、上限を調整)
+      // 魔力は1000EXPでMaxにする
+      vMagic = Math.min(exp / 1000, 1.0);
     }
 
     // 6. 幸運: 1日ごとのランダム値 (0.3〜1.0)
@@ -1519,6 +1511,16 @@ function stopYoutubeBgm() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // --- ご要望によるステータス強制上書き（1回のみ実行） ---
+  if (!localStorage.getItem('forceStateOverrideV1')) {
+    localStorage.setItem('dragonDiaryExp', '220');
+    localStorage.setItem('unlockedAchievements', JSON.stringify(['first_step', '3days']));
+    localStorage.setItem('forceStateOverrideV1', 'true');
+    console.log('[Override] 経験値を220、実績を初期状態にセットしました');
+  }
+
+  // 要素の取得
+  const dragonContainer = document.querySelector('.dragon-container');
   const bgmToggle = document.getElementById('bgmToggle');
   const bgmUrl = document.getElementById('bgmYoutubeUrl');
   
