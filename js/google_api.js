@@ -950,9 +950,17 @@ function saveUnlockedAchievements(unlocked) {
 }
 
 function checkAchievements() {
-  // 過去の同期履歴ではなく、今回のアプリから得たEXPをベースに件数を算出する
-  const localExp = parseInt(localStorage.getItem('dragonDiaryExp')) || 0;
-  const count = Math.floor(localExp / 50);
+  // 実績判定の基準値（count）を、「6月1日以降に書いた日記の件数」にする
+  const juneFirst = new Date(2026, 5, 1).getTime();
+  let count = 0;
+  if (window.allDiaries) {
+    window.allDiaries.forEach(d => {
+      let dateObj = d.start && (d.start.date || d.start.dateTime);
+      if (dateObj && new Date(dateObj).getTime() >= juneFirst) {
+        count++;
+      }
+    });
+  }
 
   let unlocked = getUnlockedAchievements();
   let newlyUnlocked = [];

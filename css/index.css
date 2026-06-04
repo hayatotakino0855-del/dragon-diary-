@@ -38,7 +38,7 @@
 
   /* Sizing */
   --nav-height: 75px;
-  --dragon-area-height: 320px; /* 余白を削り丁度いい高さに調整 */
+  --dragon-area-height: 260px; /* 余白を削り下部の境界線を上に上げる */
 }
 
 /* --- Reset & Base --- */
