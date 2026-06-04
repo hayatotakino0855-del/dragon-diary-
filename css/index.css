@@ -1062,14 +1062,17 @@ input:checked + .slider:before { transform: translateX(20px); }
   color: var(--text-secondary);
   font-size: 0.9rem;
   cursor: pointer;
+  white-space: nowrap; /* 文字が折り返さないようにする */
 }
 .save-button {
   background: var(--accent-blue);
   color: #fff;
   border: none;
-  padding: 6px 12px;
+  padding: 8px 20px; /* 横幅を少し広げる */
   border-radius: 6px;
   font-weight: bold;
+  white-space: nowrap; /* 文字が折り返さないようにする */
+  min-width: 70px;
 }
 .write-form {
   display: flex;
