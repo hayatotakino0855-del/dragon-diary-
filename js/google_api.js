@@ -321,11 +321,16 @@ function syncPlayerStats() {
     virtualToday.setHours(0,0,0,0);
     
     // 最新の日記が「基準日」または「基準日の前日」ならストリーク計算開始
+    // ※6月からのスタートとするため、2026年6月1日以降の日記のみをカウントする
+    const juneFirst = new Date(2026, 5, 1).getTime(); // 2026-06-01
     const diffDays = Math.floor((virtualToday - dateObjs[0]) / 86400000);
-    if (diffDays <= 1) {
+    
+    if (diffDays <= 1 && dateObjs[0].getTime() >= juneFirst) {
       streak = 1;
       let prevDate = dateObjs[0];
       for (let i = 1; i < dateObjs.length; i++) {
+        if (dateObjs[i].getTime() < juneFirst) break; // 6月1日より前は無視
+        
         const diff = Math.floor((prevDate - dateObjs[i]) / 86400000);
         if (diff === 1) {
           streak++;
