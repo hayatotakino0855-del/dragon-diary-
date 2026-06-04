@@ -6,7 +6,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   initDragonParticles();
   initDragonTap();
-  initDragonDrag(); // ドラッグ機能を追加
   initRandomVideoActions(); // ランダム動画再生機能を追加
   initNavigation();
   initStatBarAnimation();
@@ -609,82 +608,7 @@ tapStyle.textContent = `
 `;
 document.head.appendChild(tapStyle);
 
-// --- ドラゴンのドラッグ（引っ張る）機能 ---
-function initDragonDrag() {
-  const container = document.getElementById('dragonContainer');
-  if (!container) return;
 
-  let isDragging = false;
-  let startX = 0, startY = 0;
-  let currentX = 0, currentY = 0;
-
-  const startDrag = (e) => {
-    isDragging = true;
-    container.classList.add('dragon-dragging');
-    container.classList.remove('dragon-snap-back');
-
-    // タッチかマウスか判定
-    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-
-    startX = clientX - currentX;
-    startY = clientY - currentY;
-
-    // デフォルトの画像ドラッグを防止
-    if (e.target.tagName === 'IMG') {
-      e.preventDefault();
-    }
-  };
-
-  const moveDrag = (e) => {
-    if (!isDragging) return;
-    e.preventDefault(); // スクロール防止
-
-    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-
-    currentX = clientX - startX;
-    currentY = clientY - startY;
-
-    // ドラゴンを指に追従させる
-    container.style.transform = `translate(${currentX}px, ${currentY}px) scale(1.1)`;
-  };
-
-  const endDrag = (e) => {
-    if (!isDragging) return;
-    isDragging = false;
-
-    container.classList.remove('dragon-dragging');
-    container.classList.add('dragon-snap-back');
-
-    // 移動量が非常に少なければ「タップ」と判定してタップ処理を呼び出す
-    if (Math.abs(currentX) < 10 && Math.abs(currentY) < 10) {
-      if (typeof window.handleDragonTap === 'function') {
-        window.handleDragonTap();
-      }
-    }
-
-    // 元の位置に戻す
-    currentX = 0;
-    currentY = 0;
-    container.style.transform = '';
-
-    // アニメーションを再開させるために少し待つ
-    setTimeout(() => {
-      container.classList.remove('dragon-snap-back');
-    }, 500);
-  };
-
-  // マウスイベント
-  container.addEventListener('mousedown', startDrag);
-  window.addEventListener('mousemove', moveDrag);
-  window.addEventListener('mouseup', endDrag);
-
-  // タッチイベント
-  container.addEventListener('touchstart', startDrag, { passive: false });
-  window.addEventListener('touchmove', moveDrag, { passive: false });
-  window.addEventListener('touchend', endDrag);
-}
 
 // --- ドラゴンのランダム動画再生機能 ---
 function initRandomVideoActions() {
