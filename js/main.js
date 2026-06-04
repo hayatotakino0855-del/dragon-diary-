@@ -493,13 +493,25 @@ function initDragonTap() {
   if (!dragonContainer || !dragonImage) return;
 
   dragonContainer.addEventListener('click', () => {
-    // 小さくバウンスするアニメーション
     dragonImage.style.animation = 'none';
     dragonImage.offsetHeight; // reflow
-    dragonImage.style.animation = 'dragonTap 0.6s ease, dragonBreathing 4s ease-in-out 0.6s infinite';
+    
+    // 現在のステージ設定を取得
+    const stageInfo = typeof DRAGON_STAGES !== 'undefined' ? DRAGON_STAGES[currentStageIndex] : { animation: 'dragonBreathing' };
+    const baseAnim = stageInfo.animation || 'dragonBreathing';
+
+    if (currentStageIndex === 0 || currentStageIndex === 1) {
+      // 卵の段階（第1、第2段階）は横に揺れる
+      dragonImage.style.animation = `eggShake 0.4s ease, ${baseAnim} 4s ease-in-out 0.4s infinite`;
+    } else {
+      // ドラゴンになったらバウンスする
+      dragonImage.style.animation = `dragonTap 0.6s ease, ${baseAnim} 4s ease-in-out 0.6s infinite`;
+    }
 
     // タップ時にパーティクルを一時的に増やす
-    spawnTapParticles(dragonContainer);
+    if (typeof spawnTapParticles === 'function') {
+      spawnTapParticles(dragonContainer);
+    }
   });
 }
 
