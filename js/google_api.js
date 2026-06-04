@@ -588,7 +588,7 @@ function openDiaryDetailModal(diary) {
   // 編集キャンセル
   document.getElementById('detailCancelEditBtn').addEventListener('click', () => {
     document.getElementById('detailEditMode').style.display = 'none';
-    document.getElementById('detailViewMode').style.display = 'block';
+    document.getElementById('detailViewMode').style.display = 'flex';
   });
 
   // 保存処理
