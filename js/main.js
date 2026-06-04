@@ -123,7 +123,7 @@ function updatePlayerTitle(level) {
 // --- 6月1〜3日の遡及EXP初期化 ---
 // 一度だけ実行し、過去の日記データからEXPを計算して付与する
 window.retroGrantJuneExp = function() {
-  if (localStorage.getItem('retroExpGrantedV40')) return; // 既に実行済み
+  if (localStorage.getItem('retroExpGrantedV47')) return; // 既に実行済み
 
   // allDiariesが読み込まれるまで待つ必要があるため、google_api.jsのsyncPlayerStats後に呼ばれる
   if (!window.allDiaries || window.allDiaries.length === 0) return;
@@ -179,7 +179,7 @@ window.retroGrantJuneExp = function() {
     if (typeof gainExp === 'function') {
       gainExp(totalRetroExp);
     }
-    localStorage.setItem('retroExpGrantedV41', 'true');
+    localStorage.setItem('retroExpGrantedV47', 'true');
     console.log(`[遡及EXP] 6月1〜3日分: ${totalRetroExp} EXP を付与しました`);
     if (typeof window.showInAppNotification === 'function') {
       window.showInAppNotification('✨過去の記録を還元しました', `6月1日〜3日の日記から ${totalRetroExp} EXPを獲得しました！`);
@@ -187,7 +187,7 @@ window.retroGrantJuneExp = function() {
   } else {
     // 該当する日記が1件も見つからなかった場合
     console.log('[遡及EXP] 6月1〜3日の日記は見つかりませんでした。');
-    localStorage.setItem('retroExpGrantedV41', 'true');
+    localStorage.setItem('retroExpGrantedV47', 'true');
   }
 };
 

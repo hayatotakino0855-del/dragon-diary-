@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/index.css?v=46">
+  <link rel="stylesheet" href="css/index.css?v=47">
 </head>
 <body>
   <!-- プレイヤー登録モーダル -->
@@ -306,9 +306,9 @@
 
       <!-- ===== 日記作成画面 ===== -->
       <div id="view-write" class="view-section" style="display: none;">
-        <div class="write-header">
+        <div class="write-header" style="align-items: center;">
           <button id="backFromWrite" class="icon-button">← 戻る</button>
-          <input type="date" id="writeDateInput" class="cyber-input" style="background:transparent; border:none; color:var(--text-light); font-size:1.1rem; font-family:var(--font-display); outline:none; text-align:center;">
+          <input type="date" id="writeDateInput" class="cyber-input" style="background:transparent; border:none; color:var(--text-light); font-size:1.1rem; font-family:var(--font-display); outline:none; text-align:center; margin:0; padding:0; line-height:1; vertical-align:middle; flex:1;">
           <button class="save-button" id="writeSubmitBtn">保存</button>
         </div>
         <div class="dummy-card write-form">
@@ -361,11 +361,11 @@
   <!-- BGMプレイヤー用 -->
   <div id="youtubePlayer" style="position: absolute; width: 1px; height: 1px; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;"></div>
 
-  <script src="js/main.js?v=46"></script>
+  <script src="js/main.js?v=47"></script>
   <!-- Google API Scripts -->
   <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
   <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="js/google_api.js?v=46"></script>
+  <script src="js/google_api.js?v=47"></script>
 </body>
 </html>
