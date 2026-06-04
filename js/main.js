@@ -828,6 +828,11 @@ document.getElementById('dragonContainer')?.addEventListener('click', (e) => {
   // タップ回数を保存（ステータスの「愛情」パラメーターに影響）
   let taps = parseInt(localStorage.getItem('dragonTapCount') || '0', 10);
   localStorage.setItem('dragonTapCount', taps + 1);
+
+  // レーダーチャートをリアルタイム反映
+  if (typeof window.updateRadarChart === 'function') {
+    window.updateRadarChart(typeof currentExp !== 'undefined' ? currentExp : 0);
+  }
 });
 
 
@@ -935,7 +940,7 @@ function initDragonComments() {
         
         if (commentBox) {
           commentBox.innerHTML = `
-            <div style="margin-bottom: 10px; text-align: center; font-family: var(--font-display); color: var(--accent-gold); font-size: 0.85rem;">
+            <div style="  margin-top: 5px; text-align: center; font-family: var(--font-display); color: var(--accent-gold); font-size: 0.85rem;">
               🐉 ${stageName} ─ 総魔力: ${exp} EXP
             </div>
             <p class="accent-cyan" style="font-size:1.05rem; text-align:center; line-height: 1.6;">

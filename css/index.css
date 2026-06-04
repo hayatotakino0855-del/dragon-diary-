@@ -118,7 +118,7 @@ body {
   height: 200px;
   touch-action: manipulation; /* スマホでのダブルタップズームを防止し、JSの判定を安定させる */
   -webkit-tap-highlight-color: transparent;
-  margin-top: 40px; /* ドラゴンの位置を少し下げる */
+  margin-top: 15px; /* ドラゴンの位置を上げる */
 }
 
 .dragon-container::before {

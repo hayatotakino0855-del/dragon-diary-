@@ -547,7 +547,7 @@ function openDiaryDetailModal(diary) {
   overlay.innerHTML = `
     <div class="tag-edit-modal" style="width: 100%; height: 100dvh; max-width: none; border-radius: 0; border: none; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; background: var(--bg-card); overflow: hidden;">
       <div id="detailViewMode" style="display: flex; flex-direction: column; flex: 1; overflow: hidden; min-height: 0;">
-        <h3 style="font-size: 1.2rem; margin-bottom: 5px; flex-shrink: 0;">${displayTitle}</h3>
+        <h3 style="font-size: 1.2rem; margin-bottom: 5px; flex-shrink: 0; color: #ffffff;">${displayTitle}</h3>
         <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; flex-shrink: 0;">${dateStr}</div>
         <div style="flex: 1; overflow-y: auto; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem; word-break: break-word; min-height: 0;">
           ${formattedDesc}
