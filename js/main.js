@@ -487,50 +487,59 @@ function initDragonParticles() {
 }
 
 // --- ドラゴンをタップした時のリアクション ---
-function initDragonTap() {
+window.handleDragonTap = function() {
   const dragonContainer = document.getElementById('dragonContainer');
   const dragonImage = document.getElementById('dragonImage');
   if (!dragonContainer || !dragonImage) return;
 
+  if (currentStageIndex === 0 || currentStageIndex === 1) {
+    // 卵の段階（第1、第2段階）は横に揺れる
+    dragonImage.animate([
+      { transform: 'rotate(0deg)' },
+      { transform: 'rotate(15deg)', offset: 0.25 },
+      { transform: 'rotate(-15deg)', offset: 0.5 },
+      { transform: 'rotate(8deg)', offset: 0.75 },
+      { transform: 'rotate(0deg)' }
+    ], {
+      duration: 400,
+      easing: 'ease-in-out'
+    });
+  } else {
+    // ドラゴンになったらバウンスする
+    dragonImage.animate([
+      { transform: 'scale(1)' },
+      { transform: 'scale(0.9) translateY(10px)', offset: 0.4 },
+      { transform: 'scale(1.05) translateY(-5px)', offset: 0.7 },
+      { transform: 'scale(1)' }
+    ], {
+      duration: 500,
+      easing: 'ease-out'
+    });
+  }
+
+  // タップ回数を記録して愛情をアップさせる
+  let taps = parseInt(localStorage.getItem('dragonTapCount') || '0', 10);
+  taps++;
+  localStorage.setItem('dragonTapCount', taps);
+  
+  // レーダーチャートを即座に更新する
+  if (typeof window.updateRadarChart === 'function') {
+    window.updateRadarChart(currentExp);
+  }
+
+  // タップ時にパーティクルを一時的に増やす
+  if (typeof spawnTapParticles === 'function') {
+    spawnTapParticles(dragonContainer);
+  }
+};
+
+function initDragonTap() {
+  const dragonContainer = document.getElementById('dragonContainer');
+  if (!dragonContainer) return;
+
   dragonContainer.addEventListener('click', () => {
-    if (currentStageIndex === 0 || currentStageIndex === 1) {
-      // 卵の段階（第1、第2段階）は横に揺れる
-      dragonImage.animate([
-        { transform: 'rotate(0deg)' },
-        { transform: 'rotate(15deg)', offset: 0.25 },
-        { transform: 'rotate(-15deg)', offset: 0.5 },
-        { transform: 'rotate(8deg)', offset: 0.75 },
-        { transform: 'rotate(0deg)' }
-      ], {
-        duration: 400,
-        easing: 'ease-in-out'
-      });
-    } else {
-      // ドラゴンになったらバウンスする
-      dragonImage.animate([
-        { transform: 'scale(1)' },
-        { transform: 'scale(0.9) translateY(10px)', offset: 0.4 },
-        { transform: 'scale(1.05) translateY(-5px)', offset: 0.7 },
-        { transform: 'scale(1)' }
-      ], {
-        duration: 500,
-        easing: 'ease-out'
-      });
-    }
-
-    // タップ回数を記録して愛情をアップさせる
-    let taps = parseInt(localStorage.getItem('dragonTapCount') || '0', 10);
-    taps++;
-    localStorage.setItem('dragonTapCount', taps);
-    
-    // レーダーチャートを即座に更新する
-    if (typeof window.updateRadarChart === 'function') {
-      window.updateRadarChart(currentExp);
-    }
-
-    // タップ時にパーティクルを一時的に増やす
-    if (typeof spawnTapParticles === 'function') {
-      spawnTapParticles(dragonContainer);
+    if (typeof window.handleDragonTap === 'function') {
+      window.handleDragonTap();
     }
   });
 }
@@ -641,12 +650,19 @@ function initDragonDrag() {
     container.style.transform = `translate(${currentX}px, ${currentY}px) scale(1.1)`;
   };
 
-  const endDrag = () => {
+  const endDrag = (e) => {
     if (!isDragging) return;
     isDragging = false;
 
     container.classList.remove('dragon-dragging');
     container.classList.add('dragon-snap-back');
+
+    // 移動量が非常に少なければ「タップ」と判定してタップ処理を呼び出す
+    if (Math.abs(currentX) < 10 && Math.abs(currentY) < 10) {
+      if (typeof window.handleDragonTap === 'function') {
+        window.handleDragonTap();
+      }
+    }
 
     // 元の位置に戻す
     currentX = 0;
