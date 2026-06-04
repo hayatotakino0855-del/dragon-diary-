@@ -494,6 +494,10 @@ function renderCurrentPage() {
 
 // 日記詳細モーダル
 function openDiaryDetailModal(diary) {
+  // 閲覧回数をカウント（ステータスの「愛情」パラメーターに影響）
+  let views = parseInt(localStorage.getItem('diaryViewCount') || '0', 10);
+  localStorage.setItem('diaryViewCount', views + 1);
+
   const existing = document.querySelector('.diary-detail-overlay');
   if (existing) existing.remove();
 

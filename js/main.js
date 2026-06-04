@@ -824,6 +824,10 @@ document.getElementById('dragonContainer')?.addEventListener('click', (e) => {
     }
   }
   lastTapTime = now;
+
+  // タップ回数を保存（ステータスの「愛情」パラメーターに影響）
+  let taps = parseInt(localStorage.getItem('dragonTapCount') || '0', 10);
+  localStorage.setItem('dragonTapCount', taps + 1);
 });
 
 
@@ -1100,17 +1104,61 @@ function initRadarChart() {
     const center = cssSize / 2;
     const radius = cssSize / 2 - 25;
 
-    // EXPに基づいて擬似的にパラメータを算出
-    let baseVal = exp > 0 ? Math.min(exp / 1000, 1.0) : 0;
-    let data = [
-      Math.min(baseVal * 0.8, 1.0),
-      Math.min(baseVal * 0.6, 1.0),
-      Math.min(baseVal * 0.9, 1.0),
-      Math.min(baseVal * 0.5, 1.0),
-      Math.min(baseVal * 0.7, 1.0),
-      Math.min(baseVal * 0.4, 1.0)
-    ];
-    if (exp === 0) data = [0,0,0,0,0,0];
+    // 実際の行動データに基づいてパラメーターを算出
+    let vConsistency = 0, vExpressiveness = 0, vAffection = 0, vExploration = 0, vMagic = 0, vLuck = 0;
+
+    if (window.allDiaries && window.allDiaries.length > 0) {
+      // 1. 継続力: ストリーク (30日でMax)
+      const streakText = document.getElementById('todayStreakDisplay')?.textContent || '0';
+      const streak = parseInt(streakText, 10) || 0;
+      vConsistency = Math.min(streak / 30, 1.0);
+
+      // 2. 表現力: 平均文字数 (平均200文字でMax)
+      let totalLen = 0;
+      window.allDiaries.forEach(d => {
+        totalLen += (d.description || '').replace(/\s+/g, '').length;
+      });
+      vExpressiveness = Math.min((totalLen / window.allDiaries.length) / 200, 1.0);
+
+      // 3. 愛情: 日記詳細閲覧 + ドラゴンタップ (合計50ptでMax)
+      const views = parseInt(localStorage.getItem('diaryViewCount') || '0', 10);
+      const taps = parseInt(localStorage.getItem('dragonTapCount') || '0', 10);
+      vAffection = Math.min((views * 1 + taps * 0.2) / 50, 1.0);
+
+      // 4. 探索: タグ種類 + 写真添付 (合計100ptでMax)
+      let photoCount = 0;
+      window.allDiaries.forEach(d => {
+        if ((d.description || '').includes('【添付写真】')) photoCount++;
+      });
+      let tagsCount = typeof window.getTags === 'function' ? window.getTags().length : 0;
+      vExploration = Math.min((tagsCount * 10 + photoCount * 10) / 100, 1.0);
+
+      // 5. 魔力: 総合EXP + 深夜の記録回数
+      let nightCount = 0;
+      window.allDiaries.forEach(d => {
+        if (d.created) {
+          const h = new Date(d.created).getHours();
+          if (h >= 22 || h < 4) nightCount++;
+        }
+      });
+      const magicExp = Math.min(exp / 50000, 1.0);
+      const magicNight = Math.min(nightCount / 20, 1.0);
+      vMagic = Math.min(magicExp * 0.5 + magicNight * 0.5, 1.0);
+    }
+
+    // 6. 幸運: 1日ごとのランダム値 (0.3〜1.0)
+    const todayStr = typeof window.getVirtualTodayStr === 'function' ? window.getVirtualTodayStr() : new Date().toDateString();
+    let storedLuckDate = localStorage.getItem('luckDate');
+    let luckVal = parseFloat(localStorage.getItem('todayLuck') || '0');
+    if (storedLuckDate !== todayStr || isNaN(luckVal) || luckVal === 0) {
+      luckVal = 0.3 + Math.random() * 0.7;
+      localStorage.setItem('luckDate', todayStr);
+      localStorage.setItem('todayLuck', luckVal);
+    }
+    vLuck = luckVal;
+
+    let data = [vConsistency, vExpressiveness, vAffection, vExploration, vMagic, vLuck];
+    if (exp === 0 && (!window.allDiaries || window.allDiaries.length === 0)) data = [0,0,0,0,0,0];
 
     const labels = ['継続力', '表現力', '愛情', '探索', '魔力', '幸運'];
 

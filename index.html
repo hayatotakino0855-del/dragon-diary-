@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/index.css?v=29">
+  <link rel="stylesheet" href="css/index.css?v=30">
 </head>
 <body>
   <!-- プレイヤー登録モーダル -->
@@ -141,12 +141,35 @@
           </div>
 
           <!-- Card 3: レーダーチャート (Back) -->
-          <div class="status-card cyber-panel" data-position="back" id="cardRadar">
-            <div class="section-header">
-              <h2 class="cyber-title">ステータス分析</h2>
-            </div>
-            <div class="radar-container" style="display: flex; justify-content: center; height: 150px; margin-top: 20px;">
-              <canvas id="radarCanvas"></canvas>
+          <div class="status-card cyber-panel radar-flip-container" data-position="back" id="cardRadar">
+            <div class="radar-flip-inner" id="radarFlipInner">
+              
+              <!-- 表面 (チャート) -->
+              <div class="radar-front">
+                <div class="section-header">
+                  <h2 class="cyber-title">ステータス分析</h2>
+                </div>
+                <div class="radar-container" style="display: flex; justify-content: center; height: 150px; margin-top: 20px;">
+                  <canvas id="radarCanvas"></canvas>
+                </div>
+              </div>
+
+              <!-- 裏面 (基準説明) -->
+              <div class="radar-back">
+                <div class="section-header">
+                  <h2 class="cyber-title">分析の基準</h2>
+                </div>
+                <div class="radar-criteria">
+                  <div class="criteria-item"><span class="c-label">継続力</span>: 連続記録日数</div>
+                  <div class="criteria-item"><span class="c-label">表現力</span>: 平均文字数</div>
+                  <div class="criteria-item"><span class="c-label">愛情</span>: 詳細閲覧・タップ回数</div>
+                  <div class="criteria-item"><span class="c-label">探索</span>: 写真数・タグ種類数</div>
+                  <div class="criteria-item"><span class="c-label">魔力</span>: 総合魔力・深夜記録</div>
+                  <div class="criteria-item"><span class="c-label">幸運</span>: 今日の運勢</div>
+                </div>
+                <div class="flip-hint">2秒長押しで戻る</div>
+              </div>
+
             </div>
           </div>
 
@@ -338,11 +361,11 @@
   <!-- BGMプレイヤー用 -->
   <div id="youtubePlayer" style="position: absolute; width: 1px; height: 1px; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;"></div>
 
-  <script src="js/main.js?v=29"></script>
+  <script src="js/main.js?v=30"></script>
   <!-- Google API Scripts -->
   <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
   <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="js/google_api.js?v=29"></script>
+  <script src="js/google_api.js?v=30"></script>
 </body>
 </html>
