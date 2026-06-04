@@ -1059,6 +1059,12 @@ function initStatusCards() {
   if (!stack) return;
 
   stack.addEventListener('click', () => {
+    // 長押し処理の直後はシャッフルを防止する
+    if (window.isLongPressFired) {
+      window.isLongPressFired = false;
+      return;
+    }
+
     const cards = [
       document.querySelector('.status-card[data-position="front"]'),
       document.querySelector('.status-card[data-position="middle"]'),
@@ -1449,21 +1455,37 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state !== YT.PlayerState.PLAYING && state !== YT.PlayerState.BUFFERING) {
         ytPlayer.playVideo();
       }
-    }
-  });
-
   // Radar card long press (2 seconds) to flip
   const cardRadar = document.getElementById('cardRadar');
   if (cardRadar) {
     let pressTimer;
+    let startY = 0;
+    let startX = 0;
+
     const startPress = (e) => {
-      // スクロール時の誤作動を防ぐため、ここでは preventDefault はしないでおくが長押しタイマーはセットする
+      // タッチの初期位置を記録
+      if (e.touches && e.touches.length > 0) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }
       pressTimer = setTimeout(() => {
+        window.isLongPressFired = true; // シャッフル防止用フラグ
         cardRadar.classList.toggle('flipped');
       }, 2000);
     };
+
     const cancelPress = () => {
       clearTimeout(pressTimer);
+    };
+
+    const onTouchMove = (e) => {
+      if (!pressTimer || !e.touches || e.touches.length === 0) return;
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+      // 10px以上動いたらスクロールとみなしてキャンセル
+      if (Math.abs(currentX - startX) > 10 || Math.abs(currentY - startY) > 10) {
+        cancelPress();
+      }
     };
 
     cardRadar.addEventListener('mousedown', startPress);
@@ -1471,10 +1493,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     cardRadar.addEventListener('mouseup', cancelPress);
     cardRadar.addEventListener('mouseleave', cancelPress);
-    cardRadar.addEventListener('touchend', cancelPress);
+    cardRadar.addEventListener('touchend', (e) => {
+      cancelPress();
+      // 長押し発動直後の touchend では preventDefault して click を防ぐ（※passive:falseが必要になるため、代わりにclick側でフラグ判定する）
+    });
     cardRadar.addEventListener('touchcancel', cancelPress);
-    // スクロール中もキャンセルする
-    cardRadar.addEventListener('touchmove', cancelPress, { passive: true });
+    cardRadar.addEventListener('touchmove', onTouchMove, { passive: true });
   }
 });
 
