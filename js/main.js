@@ -123,25 +123,34 @@ function updatePlayerTitle(level) {
 // --- 6月1〜3日の遡及EXP初期化 ---
 // 一度だけ実行し、過去の日記データからEXPを計算して付与する
 window.retroGrantJuneExp = function() {
-  if (localStorage.getItem('retroExpGrantedV35')) return; // 既に実行済み
+  if (localStorage.getItem('retroExpGrantedV40')) return; // 既に実行済み
 
   // allDiariesが読み込まれるまで待つ必要があるため、google_api.jsのsyncPlayerStats後に呼ばれる
   if (!window.allDiaries || window.allDiaries.length === 0) return;
 
   let totalRetroExp = 0;
+  
+  // 日付文字列(YYYY-MM-DD)を取得するヘルパー
+  const getDateStr = (d) => {
+    if (d.start && d.start.date) return d.start.date;
+    if (d.start && d.start.dateTime) return d.start.dateTime.split('T')[0];
+    return null;
+  };
+
   const juneDates = ['2026-06-01', '2026-06-02', '2026-06-03'];
   
   // 日付順にソート（ストリーク計算のため）
-  const juneEntries = window.allDiaries.filter(d => 
-    d.start && d.start.date && juneDates.includes(d.start.date)
-  ).sort((a, b) => new Date(a.start.date) - new Date(b.start.date));
+  const juneEntries = window.allDiaries.filter(d => {
+    const ds = getDateStr(d);
+    return ds && juneDates.includes(ds);
+  }).sort((a, b) => new Date(getDateStr(a)) - new Date(getDateStr(b)));
 
   // 各日付ごとに1件だけEXP計算（同一日に複数件あっても1回分）
   const processedDates = new Set();
   let streakCount = 0;
 
   juneEntries.forEach(diary => {
-    const dateStr = diary.start.date;
+    const dateStr = getDateStr(diary);
     if (processedDates.has(dateStr)) return;
     processedDates.add(dateStr);
     streakCount++;
@@ -167,7 +176,7 @@ window.retroGrantJuneExp = function() {
     if (typeof gainExp === 'function') {
       gainExp(totalRetroExp);
     }
-    localStorage.setItem('retroExpGrantedV35', 'true');
+    localStorage.setItem('retroExpGrantedV40', 'true');
     console.log(`[遡及EXP] 6月1〜3日分: ${totalRetroExp} EXP を付与しました`);
   }
 };
@@ -1213,7 +1222,7 @@ function initRadarChart() {
       // 3. 愛情: 日記詳細閲覧 + ドラゴンタップ (合計50ptでMax)
       const views = parseInt(localStorage.getItem('diaryViewCount') || '0', 10);
       const taps = parseInt(localStorage.getItem('dragonTapCount') || '0', 10);
-      vAffection = Math.min((views * 1 + taps * 0.2) / 50, 1.0);
+      vAffection = Math.min((views * 1 + taps * 1.0) / 50, 1.0);
 
       // 4. 探索: タグ種類 + 写真添付 (合計100ptでMax)
       let photoCount = 0;
