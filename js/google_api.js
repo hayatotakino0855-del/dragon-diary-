@@ -567,7 +567,7 @@ function openDiaryDetailModal(diary) {
   const overlay = document.createElement('div');
   overlay.className = 'diary-detail-overlay tag-edit-overlay';
   overlay.innerHTML = `
-    <div class="tag-edit-modal" style="width: 100%; height: 100dvh; max-width: none; border-radius: 0; border: none; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; background: var(--bg-card); overflow: hidden;">
+    <div class="tag-edit-modal" style="width: 100%; height: 100dvh; max-width: none; border-radius: 0; border: none; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; background: #0a0f1e; overflow: hidden;">
       <div id="detailViewMode" style="display: flex; flex-direction: column; flex: 1; overflow: hidden; min-height: 0;">
         <h3 style="font-size: 1.2rem; margin-bottom: 5px; flex-shrink: 0; color: #ffffff;">${displayTitle}</h3>
         <div style="font-size: 1.1rem; color: var(--accent-cyan); font-weight: bold; margin-bottom: 15px; flex-shrink: 0; display: flex; align-items: center; gap: 6px;">
@@ -630,7 +630,9 @@ function openDiaryDetailModal(diary) {
     const diffY = endY - startY;
 
     if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
-      const currentIndex = allDiaries.findIndex(d => d.id === diary.id);
+      // フィルター済みリストに存在するか確認（検索やタグ絞り込み時の一貫性維持）
+      let targetList = filteredDiaries.find(d => d.id === diary.id) ? filteredDiaries : allDiaries;
+      const currentIndex = targetList.findIndex(d => d.id === diary.id);
       if (currentIndex === -1) return;
 
       let nextIndex = -1;
@@ -642,11 +644,11 @@ function openDiaryDetailModal(diary) {
         nextIndex = currentIndex + 1;
       }
 
-      if (nextIndex >= 0 && nextIndex < allDiaries.length) {
+      if (nextIndex >= 0 && nextIndex < targetList.length) {
         if (typeof window.playSE === 'function') window.playSE('shuffle');
         overlay.remove();
         document.body.style.overflow = '';
-        openDiaryDetailModal(allDiaries[nextIndex]);
+        openDiaryDetailModal(targetList[nextIndex]);
       }
     }
   });
