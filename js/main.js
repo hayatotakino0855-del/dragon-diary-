@@ -1104,11 +1104,29 @@ function initPowerGraphCanvas() {
 
       const activeWidth = canvas.width * 0.85;
 
-      let maxExp = 10000;
-      while (currentExp >= maxExp) {
-        maxExp += 5000;
+      let currentThreshold = 0;
+      let nextThreshold = STAGE_THRESHOLDS[STAGE_THRESHOLDS.length - 1];
+      for (let i = 0; i < STAGE_THRESHOLDS.length; i++) {
+        if (currentExp >= STAGE_THRESHOLDS[i]) {
+          currentThreshold = STAGE_THRESHOLDS[i];
+          if (i + 1 < STAGE_THRESHOLDS.length) {
+            nextThreshold = STAGE_THRESHOLDS[i + 1];
+          } else {
+            nextThreshold = STAGE_THRESHOLDS[i];
+          }
+        }
       }
 
+      let progress = 0;
+      if (nextThreshold > currentThreshold) {
+        progress = (currentExp - currentThreshold) / (nextThreshold - currentThreshold);
+      } else {
+        progress = 1.0;
+      }
+      
+      if (progress > 1) progress = 1;
+      if (progress < 0) progress = 0;
+      
       ctx.globalCompositeOperation = 'lighter';
       particles.forEach(p => {
         // 風に流されるような動き
@@ -1117,7 +1135,7 @@ function initPowerGraphCanvas() {
         p.opacity -= 0.008;
         
         if(p.y < 0 || p.opacity <= 0) {
-          p.x = Math.random() * (canvas.width * (Math.min(currentExp, maxExp) / maxExp) || 10);
+          p.x = Math.random() * (canvas.width * progress || 10);
           p.opacity = Math.random() * 0.6 + 0.4;
           // 新しく生まれるときに速度をリセット
           p.speedY = Math.random() * 2 + 0.5;
@@ -1138,10 +1156,7 @@ function initPowerGraphCanvas() {
         ctx.shadowBlur = 0;
       });
 
-      // 現在値の縦線 (7850などの固定値から動的値へ)
-      let progress = currentExp / maxExp;
-      if (progress > 1) progress = 1;
-      if (progress < 0) progress = 0;
+      // 現在値の縦線
       const dynActiveWidth = canvas.width * progress;
 
       if (progress > 0) {

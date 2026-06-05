@@ -533,8 +533,8 @@ body {
 .static-flame-img {
   width: 100%;
   height: 140px; 
-  object-fit: contain; /* 見切れないように確実におさめる */
-  object-position: bottom; /* 下揃えにして炎の根本を浮かさない */
+  object-fit: fill; /* コンテナ全体に広げることで、clip-pathとキャンバスの縦線の位置を完全に一致させる */
+  object-position: bottom;
   display: block;
   pointer-events: none;
 }
