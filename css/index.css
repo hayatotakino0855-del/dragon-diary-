@@ -1142,16 +1142,12 @@ input:checked + .slider:before { transform: translateX(20px); }
    Scrollbar
    ============================================ */
 ::-webkit-scrollbar {
-  width: 4px;
+  display: none;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.3);
-  border-radius: 2px;
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 /* ============================================
