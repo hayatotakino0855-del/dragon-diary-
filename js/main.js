@@ -311,7 +311,20 @@ function gainExp(amount) {
     const img = document.getElementById('dragonImage');
     const nameEl = document.querySelector('.dragon-name');
     const stageEl = document.querySelector('.dragon-stage');
+    const containerEl = document.getElementById('dragonContainer');
+    const infoEl = document.getElementById('dragonInfo');
+
     if(img && stage) {
+      img.onload = () => {
+        if(containerEl) containerEl.style.opacity = '1';
+        if(infoEl) infoEl.style.opacity = '1';
+      };
+      // すでにキャッシュから読み込まれている場合の対策
+      if (img.complete && img.src.includes(stage.image)) {
+        if(containerEl) containerEl.style.opacity = '1';
+        if(infoEl) infoEl.style.opacity = '1';
+      }
+
       img.src = stage.image;
       img.style.animation = `${stage.animation} 4s ease-in-out infinite`;
       nameEl.textContent = stage.name;
