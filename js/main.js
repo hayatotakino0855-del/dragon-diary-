@@ -79,6 +79,37 @@ function initTodayDate() {
   if (elMonth) elMonth.textContent = `${month}月`;
   if (elDay) elDay.textContent = `${day}日`;
   if (elWeekday) elWeekday.textContent = `${weekday}曜日`;
+
+  // 0時から朝8時までは「前日の日記を書く」に変更
+  const writeBtnText = document.querySelector('#writeButton .write-button-text');
+  const titleInput = document.getElementById('diaryTitleInput');
+  const bodyInput = document.getElementById('diaryBodyInput');
+  
+  if (today.getHours() < 8) {
+    if (writeBtnText) {
+      writeBtnText.innerHTML = `
+        <svg class="write-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
+        前日の日記を書く
+      `;
+    }
+    if (titleInput) titleInput.placeholder = "前日のタイトル（要約）";
+    if (bodyInput) bodyInput.placeholder = "前日あったこと、感じたことを書こう...";
+  } else {
+    if (writeBtnText) {
+      writeBtnText.innerHTML = `
+        <svg class="write-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
+        今日の日記を書く
+      `;
+    }
+    if (titleInput) titleInput.placeholder = "今日のタイトル（要約）";
+    if (bodyInput) bodyInput.placeholder = "今日あったこと、感じたことを書こう...";
+  }
 }
 
 // --- 成長システム（状態管理） ---
