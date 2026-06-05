@@ -16,11 +16,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/index.css?v=75">
+  <link rel="stylesheet" href="css/index.css?v=76">
 </head>
 <body>
   <!-- プレイヤー登録モーダル -->
-  <div id="player-setup-modal" class="modal-overlay">
+  <div id="player-setup-modal" class="modal-overlay hidden">
     <div class="modal-content cyber-panel">
       <h3>プレイヤー登録</h3>
       <p>あなたの名前を教えてください。</p>
@@ -40,7 +40,7 @@
       <div class="dragon-glow"></div>
       <div class="dragon-container" id="dragonContainer">
         <img
-          src="assets/dragons/stage3_hatchling.png"
+          src="assets/dragons/stage1_egg.png"
           alt="あなたのドラゴン"
           class="dragon-image"
           id="dragonImage"
@@ -55,8 +55,8 @@
         <div class="dragon-particles" id="dragonParticles"></div>
       </div>
       <div class="dragon-info">
-        <span class="dragon-name">幼竜</span>
-        <span class="dragon-stage">第3段階</span>
+        <span class="dragon-name">神秘の卵</span>
+        <span class="dragon-stage">第1段階</span>
       </div>
     </section>
 
@@ -361,11 +361,11 @@
   <!-- BGMプレイヤー用 -->
   <div id="youtubePlayer" style="position: absolute; width: 1px; height: 1px; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;"></div>
 
-  <script src="js/main.js?v=75"></script>
+  <script src="js/main.js?v=76"></script>
   <!-- Google API Scripts -->
   <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
   <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="js/google_api.js?v=75"></script>
+  <script src="js/google_api.js?v=76"></script>
 </body>
 </html>
