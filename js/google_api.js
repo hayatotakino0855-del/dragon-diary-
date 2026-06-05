@@ -1238,9 +1238,19 @@ window.saveDiaryToGoogle = async function(title, body, file, targetDateStr) {
 document.addEventListener('DOMContentLoaded', () => {
   const authBtn = document.getElementById('googleAuthButton');
   if (authBtn) {
-    authBtn.disabled = true;
-    authBtn.textContent = '読み込み中...';
-    authBtn.onclick = handleAuthClick;
+    if (gapiInited && gisInited) {
+      if (isAuthorized) {
+        updateAuthStatus();
+      } else {
+        authBtn.disabled = false;
+        authBtn.textContent = 'Googleでログイン';
+        authBtn.onclick = handleAuthClick;
+      }
+    } else {
+      authBtn.disabled = true;
+      authBtn.textContent = '読み込み中...';
+      authBtn.onclick = handleAuthClick;
+    }
   }
 
   // 日記作成画面の日付を今日（基準日）にセット
