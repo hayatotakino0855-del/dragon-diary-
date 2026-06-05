@@ -1581,7 +1581,7 @@ function playYoutubeBgm(videoId) {
     });
     // 動画切り替え時にも音量を適用
     if (typeof ytPlayer.setVolume === 'function') {
-      ytPlayer.setVolume(15);
+      ytPlayer.setVolume(5);
     }
   } else {
     ytPlayer = new YT.Player('youtubePlayer', {
@@ -1603,8 +1603,8 @@ function playYoutubeBgm(videoId) {
 }
 
 function onPlayerReady(event) {
-  // 音量を以前の30から15に変更して少し下げる
-  event.target.setVolume(15);
+  // 音量を以前の15から5に変更してさらに下げる
+  event.target.setVolume(5);
   event.target.playVideo();
 }
 
