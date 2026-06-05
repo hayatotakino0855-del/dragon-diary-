@@ -3,6 +3,49 @@
 // ホーム画面のインタラクション
 // ============================================
 
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+window.playSE = function(type) {
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  
+  const now = audioCtx.currentTime;
+  
+  if (type === 'shuffle') {
+    // シャッフル音：サッと引くような音
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(600, now);
+    osc.frequency.exponentialRampToValueAtTime(150, now + 0.15);
+    gain.gain.setValueAtTime(0.1, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+    osc.start(now);
+    osc.stop(now + 0.15);
+  } else if (type === 'click') {
+    // クリック音：短いピコッ
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1200, now);
+    osc.frequency.exponentialRampToValueAtTime(2000, now + 0.05);
+    gain.gain.setValueAtTime(0.1, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+    osc.start(now);
+    osc.stop(now + 0.05);
+  } else if (type === 'tap') {
+    // タップ音：柔らかいポンッ
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, now);
+    osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.linearRampToValueAtTime(0, now + 0.15);
+    osc.start(now);
+    osc.stop(now + 0.15);
+  }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   initDragonParticles();
   initDragonTap();
@@ -516,6 +559,8 @@ window.handleDragonTap = function() {
   const dragonImage = document.getElementById('dragonImage');
   if (!dragonContainer || !dragonImage) return;
 
+  if (typeof window.playSE === 'function') window.playSE('tap');
+
   // Web Animations APIがCSS Animationに負けることがあるため、CSS Animationを一時的に無効化する
   const currentInlineAnimation = dragonImage.style.animation;
   dragonImage.style.animation = 'none';
@@ -787,6 +832,7 @@ function initNavigation() {
 
   navItems.forEach(item => {
     item.addEventListener('click', () => {
+      if (typeof window.playSE === 'function') window.playSE('click');
       navItems.forEach(n => n.classList.remove('active'));
       item.classList.add('active');
       const page = item.getAttribute('data-page');
@@ -1192,6 +1238,8 @@ function initStatusCards() {
       window.isLongPressFired = false;
       return;
     }
+
+    if (typeof window.playSE === 'function') window.playSE('shuffle');
 
     const cards = [
       document.querySelector('.status-card[data-position="front"]'),
