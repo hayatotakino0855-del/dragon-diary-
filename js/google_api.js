@@ -514,7 +514,13 @@ function openDiaryDetailModal(diary) {
   localStorage.setItem('diaryViewCount', views + 1);
 
   const existing = document.querySelector('.diary-detail-overlay');
-  if (existing) existing.remove();
+  if (existing) {
+    existing.remove();
+    document.body.style.overflow = '';
+  }
+  
+  // モーダルを開いている間は背景のスクロールを無効化
+  document.body.style.overflow = 'hidden';
 
   const title = diary.summary || '無題';
   let desc = diary.description || '';
@@ -543,7 +549,8 @@ function openDiaryDetailModal(diary) {
   }
 
   const dateObj = new Date(diary.start.date);
-  const dateStr = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+  const dateStr = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日 (${weekdays[dateObj.getDay()]})`;
 
   const assignments = getTagAssignments();
   const tags = getTags();
@@ -563,7 +570,12 @@ function openDiaryDetailModal(diary) {
     <div class="tag-edit-modal" style="width: 100%; height: 100dvh; max-width: none; border-radius: 0; border: none; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; background: var(--bg-card); overflow: hidden;">
       <div id="detailViewMode" style="display: flex; flex-direction: column; flex: 1; overflow: hidden; min-height: 0;">
         <h3 style="font-size: 1.2rem; margin-bottom: 5px; flex-shrink: 0; color: #ffffff;">${displayTitle}</h3>
-        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; flex-shrink: 0;">${dateStr}</div>
+        <div style="font-size: 1.1rem; color: var(--accent-cyan); font-weight: bold; margin-bottom: 15px; flex-shrink: 0; display: flex; align-items: center; gap: 6px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          ${dateStr}
+        </div>
         <div style="flex: 1; overflow-y: auto; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem; word-break: break-word; min-height: 0;">
           ${formattedDesc}
           ${photoUrl ? `<div style="margin-top: 15px;"><a href="${photoUrl}" target="_blank" style="color: var(--accent-blue); text-decoration: underline;">添付写真を見る (Google Drive)</a></div>` : ''}
@@ -592,10 +604,51 @@ function openDiaryDetailModal(diary) {
 
   document.getElementById('detailCloseBtn').addEventListener('click', () => {
     overlay.remove();
+    document.body.style.overflow = '';
   });
   document.getElementById('detailEditTagBtn').addEventListener('click', () => {
     overlay.remove();
+    document.body.style.overflow = '';
     openTagEditModal(diary.id, title);
+  });
+  
+  // スワイプによる日記切り替え機能
+  let startX = 0;
+  let startY = 0;
+  overlay.addEventListener('touchstart', (e) => {
+    // 編集モード中はスワイプを無視
+    if (document.getElementById('detailEditMode').style.display !== 'none') return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+
+  overlay.addEventListener('touchend', (e) => {
+    if (document.getElementById('detailEditMode').style.display !== 'none') return;
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const diffX = endX - startX;
+    const diffY = endY - startY;
+
+    if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+      const currentIndex = allDiaries.findIndex(d => d.id === diary.id);
+      if (currentIndex === -1) return;
+
+      let nextIndex = -1;
+      if (diffX > 0) {
+        // 右にスワイプ（前へ = 新しい日記へ）
+        nextIndex = currentIndex - 1;
+      } else {
+        // 左にスワイプ（次へ = 古い日記へ）
+        nextIndex = currentIndex + 1;
+      }
+
+      if (nextIndex >= 0 && nextIndex < allDiaries.length) {
+        if (typeof window.playSE === 'function') window.playSE('shuffle');
+        overlay.remove();
+        document.body.style.overflow = '';
+        openDiaryDetailModal(allDiaries[nextIndex]);
+      }
+    }
   });
   
   // 編集モードへの切り替え
@@ -635,6 +688,7 @@ function openDiaryDetailModal(diary) {
         });
 
         overlay.remove();
+        document.body.style.overflow = '';
         fetchDiariesFromCalendar();
       } catch (e) {
         console.error(e);
