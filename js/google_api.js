@@ -239,6 +239,9 @@ let activeTagFilter = null;
 
 window.getVirtualTodayStr = function() {
   const now = new Date();
+  if (now.getHours() < 8) {
+    now.setDate(now.getDate() - 1);
+  }
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, '0');
   const d = String(now.getDate()).padStart(2, '0');
@@ -366,14 +369,12 @@ function syncPlayerStats() {
   const elLastLogin = document.getElementById('displayLastLogin');
   if (elLastLogin) elLastLogin.textContent = lastLoginStr;
   
-  const vtStr = window.getVirtualTodayStr();
-  const [vy, vm, vd] = vtStr.split('-');
-  const virtualNow = new Date(vy, vm - 1, vd);
-
+  const actualNow = new Date();
+  
   const elTodayMonth = document.getElementById('todayMonthDisplay');
-  if (elTodayMonth) elTodayMonth.textContent = `${virtualNow.getMonth() + 1}月`;
+  if (elTodayMonth) elTodayMonth.textContent = `${actualNow.getMonth() + 1}月`;
   const elTodayDay = document.getElementById('todayDayDisplay');
-  if (elTodayDay) elTodayDay.textContent = `${virtualNow.getDate()}日`;
+  if (elTodayDay) elTodayDay.textContent = `${actualNow.getDate()}日`;
   const elTodayStreak = document.getElementById('todayStreakDisplay');
   if (elTodayStreak) elTodayStreak.textContent = streak;
 
