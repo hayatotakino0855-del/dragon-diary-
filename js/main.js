@@ -252,21 +252,44 @@ function gainExp(amount) {
     }
   }
 
-  // 炎画像のクリップ
+  // 炎画像のクリップ (絆レベル / 次の進化までの経験値プログレス)
   const flameImg = document.querySelector('.active-flame');
   if (flameImg) {
-    let maxExp = 10000;
-    while (currentExp >= maxExp) {
-      maxExp += 5000;
-    }
-    const midLabel = document.getElementById('flameMidLabel');
-    const maxLabel = document.getElementById('flameMaxLabel');
-    if (midLabel && maxLabel) {
-      midLabel.textContent = Math.floor(maxExp / 2);
-      maxLabel.textContent = maxExp;
+    let currentThreshold = 0;
+    let nextThreshold = STAGE_THRESHOLDS[STAGE_THRESHOLDS.length - 1]; // 最大
+    
+    for (let i = 0; i < STAGE_THRESHOLDS.length; i++) {
+      if (currentExp >= STAGE_THRESHOLDS[i]) {
+        currentThreshold = STAGE_THRESHOLDS[i];
+        if (i + 1 < STAGE_THRESHOLDS.length) {
+          nextThreshold = STAGE_THRESHOLDS[i + 1];
+        } else {
+          nextThreshold = STAGE_THRESHOLDS[i]; // 最大値到達
+        }
+      }
     }
 
-    let progress = currentExp / maxExp;
+    const minLabel = document.getElementById('flameMinLabel');
+    const midLabel = document.getElementById('flameMidLabel');
+    const maxLabel = document.getElementById('flameMaxLabel');
+    
+    if (minLabel) minLabel.textContent = currentThreshold;
+    if (maxLabel) maxLabel.textContent = nextThreshold;
+    if (midLabel) {
+      if (nextThreshold > currentThreshold) {
+        midLabel.textContent = Math.floor((currentThreshold + nextThreshold) / 2);
+      } else {
+        midLabel.textContent = "MAX";
+      }
+    }
+
+    let progress = 0;
+    if (nextThreshold > currentThreshold) {
+      progress = (currentExp - currentThreshold) / (nextThreshold - currentThreshold);
+    } else {
+      progress = 1.0;
+    }
+    
     if (progress > 1) progress = 1;
     if (progress < 0) progress = 0;
     const percent = progress * 100;
@@ -276,13 +299,6 @@ function gainExp(amount) {
   // レーダーチャートの更新
   if (typeof window.updateRadarChart === 'function') {
     window.updateRadarChart(currentExp);
-  }
-
-  // プレイヤーレベルのサークルゲージ更新
-  const circleGauge = document.querySelector('.circle-gauge');
-  if (circleGauge) {
-    const levelProgress = currentExp > 0 ? (currentExp % 5000) / 5000 * 100 : 0;
-    circleGauge.style.background = `conic-gradient(var(--accent-cyan) ${levelProgress}%, rgba(255,255,255,0.1) 0)`;
   }
 }
 
