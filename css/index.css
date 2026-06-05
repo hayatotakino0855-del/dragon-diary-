@@ -137,6 +137,7 @@ body {
   top: 8px; /* 元に戻す */
   left: 0;
   object-fit: contain;
+  transform-origin: bottom center; /* 揺れの軸を下部に設定 */
   animation: dragonBreathing 4s ease-in-out infinite;
   filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.3)) brightness(1.25);
   transition: opacity 0.1s ease;
