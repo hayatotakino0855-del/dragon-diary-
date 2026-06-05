@@ -199,6 +199,16 @@ function gainExp(amount) {
   // L = 1/2 + sqrt(1/4 + 2 * exp / 100) を使って計算
   playerLevel = Math.floor((1 + Math.sqrt(1 + 8 * currentExp / 100)) / 2);
   
+  // 円形ゲージ（サークルゲージ）の進捗を計算して更新
+  const currentLevelExp = 100 * playerLevel * (playerLevel - 1) / 2;
+  const nextLevelExp = 100 * (playerLevel + 1) * playerLevel / 2;
+  const levelProgressPercent = ((currentExp - currentLevelExp) / (nextLevelExp - currentLevelExp)) * 100;
+  
+  const circleGauge = document.querySelector('.circle-gauge');
+  if (circleGauge) {
+    circleGauge.style.setProperty('--level-progress', `${levelProgressPercent}%`);
+  }
+  
   const levelDisplay = document.getElementById('playerLevelDisplay');
   if (levelDisplay) levelDisplay.textContent = `プレイヤーレベル: ${playerLevel}`;
   updatePlayerTitle(playerLevel);
