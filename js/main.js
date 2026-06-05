@@ -1581,7 +1581,7 @@ function playYoutubeBgm(videoId) {
     });
     // 動画切り替え時にも音量を適用
     if (typeof ytPlayer.setVolume === 'function') {
-      ytPlayer.setVolume(5);
+      ytPlayer.setVolume(2);
     }
   } else {
     ytPlayer = new YT.Player('youtubePlayer', {
@@ -1603,12 +1603,16 @@ function playYoutubeBgm(videoId) {
 }
 
 function onPlayerReady(event) {
-  // 音量を以前の15から5に変更してさらに下げる
-  event.target.setVolume(5);
+  // 音量を限界まで下げる
+  event.target.setVolume(2);
   event.target.playVideo();
 }
 
 function onPlayerStateChange(event) {
+  if (event.data === YT.PlayerState.PLAYING) {
+    // 再生開始時にも確実に音量を適用
+    event.target.setVolume(2);
+  }
   if (event.data === YT.PlayerState.ENDED) {
     event.target.playVideo();
   }
