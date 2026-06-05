@@ -508,7 +508,7 @@ function renderCurrentPage() {
 }
 
 // 日記詳細モーダル
-function openDiaryDetailModal(diary) {
+function openDiaryDetailModal(diary, isSwipe = false) {
   // 閲覧回数をカウント（ステータスの「愛情」パラメーターに影響）
   let views = parseInt(localStorage.getItem('diaryViewCount') || '0', 10);
   localStorage.setItem('diaryViewCount', views + 1);
@@ -566,6 +566,7 @@ function openDiaryDetailModal(diary) {
 
   const overlay = document.createElement('div');
   overlay.className = 'diary-detail-overlay tag-edit-overlay';
+  if (isSwipe) overlay.style.animation = 'none';
   overlay.innerHTML = `
     <div class="tag-edit-modal" style="width: 100%; height: 100dvh; max-width: none; border-radius: 0; border: none; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; background: #0a0f1e; overflow: hidden;">
       <div id="detailViewMode" style="display: flex; flex-direction: column; flex: 1; overflow: hidden; min-height: 0;">
@@ -637,18 +638,18 @@ function openDiaryDetailModal(diary) {
 
       let nextIndex = -1;
       if (diffX > 0) {
-        // 右にスワイプ（前へ = 新しい日記へ）
-        nextIndex = currentIndex - 1;
-      } else {
-        // 左にスワイプ（次へ = 古い日記へ）
+        // 右にスワイプ（前へ = 古い日記へ）※逆にする
         nextIndex = currentIndex + 1;
+      } else {
+        // 左にスワイプ（次へ = 新しい日記へ）※逆にする
+        nextIndex = currentIndex - 1;
       }
 
       if (nextIndex >= 0 && nextIndex < targetList.length) {
         if (typeof window.playSE === 'function') window.playSE('shuffle');
         overlay.remove();
         document.body.style.overflow = '';
-        openDiaryDetailModal(targetList[nextIndex]);
+        openDiaryDetailModal(targetList[nextIndex], true);
       }
     }
   });
