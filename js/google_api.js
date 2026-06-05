@@ -878,7 +878,81 @@ function renderCalendar() {
   if (preview) preview.innerHTML = '';
 }
 
+let calSelectedYear = null;
+let calSelectedMonth = null;
+let calSelectedDay = null;
+let isCalSwipeInitialized = false;
+
+function initCalendarSwipe() {
+  if (isCalSwipeInitialized) return;
+  const preview = document.getElementById('calDiaryPreview');
+  if (!preview) return;
+
+  let startX = 0;
+  let startY = 0;
+
+  preview.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+
+  preview.addEventListener('touchend', (e) => {
+    if (calSelectedYear === null) return;
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const diffX = endX - startX;
+    const diffY = endY - startY;
+
+    // 水平方向へのスワイプが一定以上かつ、垂直方向より大きい場合
+    if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+      const dt = new Date(calSelectedYear, calSelectedMonth, calSelectedDay);
+      if (diffX > 0) {
+        // 右にスワイプ（前日へ）
+        dt.setDate(dt.getDate() - 1);
+      } else {
+        // 左にスワイプ（翌日へ）
+        dt.setDate(dt.getDate() + 1);
+      }
+
+      // 月がまたがる場合はカレンダーを再描画
+      const newYear = dt.getFullYear();
+      const newMonth = dt.getMonth();
+      const newDay = dt.getDate();
+
+      if (newMonth !== calMonth || newYear !== calYear) {
+        calYear = newYear;
+        calMonth = newMonth;
+        renderCalendar();
+      }
+
+      // カレンダーの選択状態を更新
+      const grid = document.getElementById('calendarGrid');
+      if (grid) {
+        grid.querySelectorAll('.cal-selected').forEach(el => el.classList.remove('cal-selected'));
+        // 今の月の中の対応する日付セルを探す
+        const cells = grid.querySelectorAll('div');
+        cells.forEach(cell => {
+          if (parseInt(cell.textContent) === newDay && !cell.classList.contains('cal-header')) {
+            cell.classList.add('cal-selected');
+          }
+        });
+      }
+
+      // 日付を更新してプレビュー表示
+      showCalendarDiaries(newYear, newMonth, newDay);
+    }
+  });
+
+  isCalSwipeInitialized = true;
+}
+
 function showCalendarDiaries(year, month, day) {
+  calSelectedYear = year;
+  calSelectedMonth = month;
+  calSelectedDay = day;
+
+  initCalendarSwipe();
+
   const preview = document.getElementById('calDiaryPreview');
   if (!preview) return;
   preview.innerHTML = '';
