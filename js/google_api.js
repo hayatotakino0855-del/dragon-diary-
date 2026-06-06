@@ -30,6 +30,11 @@ async function initializeGapiClient() {
     maybeEnableButtons();
   } catch (err) {
     console.error('GAPI Init Error:', err);
+    const authBtn = document.getElementById('googleAuthButton');
+    if (authBtn) {
+      authBtn.textContent = '読込失敗(再読込推奨)';
+      authBtn.disabled = true;
+    }
   }
 }
 
@@ -1250,6 +1255,18 @@ document.addEventListener('DOMContentLoaded', () => {
       authBtn.disabled = true;
       authBtn.textContent = '読み込み中...';
       authBtn.onclick = handleAuthClick;
+      
+      // 10秒待っても読み込まれない場合はタイムアウトとする（通信エラーや広告ブロッカー等）
+      setTimeout(() => {
+        if (!gapiInited || !gisInited) {
+          const btn = document.getElementById('googleAuthButton');
+          if (btn && btn.textContent === '読み込み中...') {
+            btn.textContent = '読込タイムアウト(再読込推奨)';
+            btn.disabled = false;
+            btn.onclick = () => location.reload();
+          }
+        }
+      }, 10000);
     }
   }
 
