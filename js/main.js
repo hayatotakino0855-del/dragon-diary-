@@ -300,12 +300,10 @@ function gainExp(amount) {
     }
   }
 
-  // 進化基準に達した場合の強制イベント
-  if (newUnlockedStage > maxUnlockedStage) {
+  // 初回ロード時 または 進化基準に達した場合の処理
+  if (amount === 0) {
+    // 初回ロード時は進化アニメーションを再生せず、即座に最新状態をセットしてフェードインする
     maxUnlockedStage = newUnlockedStage;
-    triggerEvolution(newUnlockedStage);
-  } else if (amount === 0) {
-    // 初回ロード時の画像セット用
     currentStageIndex = maxUnlockedStage;
     const stage = DRAGON_STAGES[currentStageIndex];
     const img = document.getElementById('dragonImage');
@@ -339,6 +337,10 @@ function gainExp(amount) {
         img.classList.add('legendary-glow');
       }
     }
+  } else if (newUnlockedStage > maxUnlockedStage) {
+    // 経験値を獲得して新しい段階に達した場合のみ、進化アニメーションを再生
+    maxUnlockedStage = newUnlockedStage;
+    triggerEvolution(newUnlockedStage);
   }
 
   // 炎画像のクリップ (絆レベル / 次の進化までの経験値プログレス)
