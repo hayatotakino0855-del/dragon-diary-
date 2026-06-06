@@ -319,13 +319,15 @@ function gainExp(amount) {
         if(containerEl) containerEl.style.opacity = '1';
         if(infoEl) infoEl.style.opacity = '1';
       };
-      // すでにキャッシュから読み込まれている場合の対策
-      if (img.complete && img.src.includes(stage.image)) {
+
+      img.src = stage.image;
+      
+      // srcをセットした後にキャッシュ判定を行う
+      if (img.complete) {
         if(containerEl) containerEl.style.opacity = '1';
         if(infoEl) infoEl.style.opacity = '1';
       }
 
-      img.src = stage.image;
       img.style.animation = `${stage.animation} 4s ease-in-out infinite`;
       nameEl.textContent = stage.name;
       stageEl.textContent = stage.stage;
