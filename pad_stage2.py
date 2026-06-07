@@ -62,7 +62,8 @@ try:
     out_nest = Image.new('RGBA', (w1, h1), (0,0,0,0))
     nest_x = (w1 - nest_new_w) // 2
     # position it at the bottom of the egg
-    nest_y = paste_y + egg1_h - int(nest_new_h * 0.7) 
+    # To move it slightly upwards, we increase the offset subtracted from the bottom
+    nest_y = paste_y + egg1_h - int(nest_new_h * 0.85) 
     out_nest.paste(nest_resized, (nest_x, nest_y))
     out_nest.save('assets/dragons/stage2_nest_padded.png')
     print("Saved scaled nest")

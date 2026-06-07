@@ -1166,7 +1166,7 @@ function updateDragonNest(stageIndex) {
   nest.style.left = '0';
 
   if (stageIndex === 1) { // 第二段階（覚醒の卵）の時は巣を表示
-    nest.src = 'assets/dragons/stage2_nest_padded.png';
+    nest.src = 'assets/dragons/stage2_nest_padded.png?v=2';
     nest.style.display = 'block';
   } else {
     nest.style.display = 'none';
