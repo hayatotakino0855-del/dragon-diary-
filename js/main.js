@@ -1145,12 +1145,33 @@ const DRAGON_STAGES = [
 
 function updateDragonNest(stageIndex) {
   const nest = document.getElementById('dragonNest');
-  if (!nest) return;
-  if (stageIndex === 1) { // 覚醒の卵の時だけ巣を表示
+  const img = document.getElementById('dragonImage');
+  if (!nest || !img) return;
+  
+  if (stageIndex <= 2) { // 卵の時だけ少し小さくして巣を表示
     nest.src = 'assets/dragons/stage2_nest.png';
     nest.style.display = 'block';
+    
+    // 少し小さくする (85%サイズにして中央配置)
+    const smallStyle = '85%';
+    const offsetStyle = '7.5%';
+    nest.style.width = smallStyle;
+    nest.style.height = smallStyle;
+    nest.style.top = offsetStyle;
+    nest.style.left = offsetStyle;
+    
+    img.style.width = smallStyle;
+    img.style.height = smallStyle;
+    img.style.top = offsetStyle;
+    img.style.left = offsetStyle;
   } else {
     nest.style.display = 'none';
+    
+    // 元のサイズに戻す
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.top = '8px'; // CSSのデフォルト値
+    img.style.left = '0';
   }
 }
 
@@ -1210,9 +1231,15 @@ document.getElementById('dragonContainer')?.addEventListener('click', (e) => {
     const nameEl = document.querySelector('.dragon-name');
     const stageEl = document.querySelector('.dragon-stage');
 
+    const nest = document.getElementById('dragonNest');
+
     // フェードアウト → 切り替え → フェードイン
     img.style.transition = 'opacity 0.3s ease';
     img.style.opacity = '0';
+    if (nest && nest.style.display !== 'none') {
+      nest.style.transition = 'opacity 0.3s ease';
+      nest.style.opacity = '0';
+    }
 
     setTimeout(() => {
       img.src = stage.image;
@@ -1231,6 +1258,7 @@ document.getElementById('dragonContainer')?.addEventListener('click', (e) => {
 
       updateDragonParticles(currentStageIndex);
       img.style.opacity = '1';
+      if (nest) nest.style.opacity = '1';
     }, 300);
   } else {
     // シングルタップ（またはダブルタップの1回目）時のエフェクト
