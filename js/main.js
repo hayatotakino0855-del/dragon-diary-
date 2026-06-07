@@ -534,14 +534,43 @@ function initDevMode() {
   if (applyBtn) {
     applyBtn.addEventListener('click', () => {
       if (input && input.value.trim() === '開発者モード') {
-        window.isDevMode = true;
+        if (!window.isDevMode) {
+          // 初回有効化時にセーブデータのバックアップを作成
+          localStorage.setItem('devBackupExp', localStorage.getItem('dragonDiaryExp') || '0');
+          localStorage.setItem('devBackupUnlocked', localStorage.getItem('unlockedAchievements') || '[]');
+          localStorage.setItem('devBackupDates', localStorage.getItem('achievementDates') || '{}');
+          window.isDevMode = true;
+        }
+        
         if (msg) {
           msg.textContent = '開発者モードを有効にしました';
           msg.style.display = 'block';
           msg.style.color = 'var(--accent-cyan)';
         }
         if (lvlBtn) lvlBtn.style.display = 'block';
-        if (typeof checkAchievements === 'function') checkAchievements(); // 全実績を仮表示
+        if (typeof renderAchievements === 'function') renderAchievements(); // 全実績を仮表示
+      } else if (input && input.value.trim().match(/^\d+$/)) {
+        // トラブル復旧用：数字だけが入力された場合、その値を現在の経験値として上書き
+        const newExp = parseInt(input.value.trim(), 10);
+        currentExp = newExp;
+        localStorage.setItem('dragonDiaryExp', currentExp);
+        gainExp(0);
+        if (msg) {
+          msg.textContent = `経験値を ${newExp} に設定しました`;
+          msg.style.display = 'block';
+          msg.style.color = 'var(--accent-cyan)';
+        }
+      } else if (input && input.value.trim() === '実績リセット') {
+        // 現在のEXPと日記数に基づいて実績を完全に再計算・リセットするコマンド
+        localStorage.removeItem('unlockedAchievements');
+        localStorage.removeItem('achievementDates');
+        if (typeof checkAchievements === 'function') checkAchievements();
+        if (typeof renderAchievements === 'function') renderAchievements();
+        if (msg) {
+          msg.textContent = `実績データを現在の状態に合わせて再計算しました`;
+          msg.style.display = 'block';
+          msg.style.color = 'var(--accent-cyan)';
+        }
       } else {
         if (msg) {
           msg.textContent = 'コマンドが無効です';
@@ -555,12 +584,32 @@ function initDevMode() {
   if (clearBtn) {
     clearBtn.addEventListener('click', () => {
       if (input) input.value = '';
-      window.isDevMode = false;
       if (msg) {
         msg.style.display = 'none';
       }
       if (lvlBtn) lvlBtn.style.display = 'none';
-      if (typeof checkAchievements === 'function') checkAchievements(); // 仮表示を戻す
+      
+      if (window.isDevMode) {
+        // バックアップから元のデータを復元
+        const bExp = localStorage.getItem('devBackupExp');
+        const bUnlocked = localStorage.getItem('devBackupUnlocked');
+        const bDates = localStorage.getItem('devBackupDates');
+        
+        if (bExp !== null) localStorage.setItem('dragonDiaryExp', bExp);
+        if (bUnlocked !== null) localStorage.setItem('unlockedAchievements', bUnlocked);
+        if (bDates !== null) localStorage.setItem('achievementDates', bDates);
+        
+        localStorage.removeItem('devBackupExp');
+        localStorage.removeItem('devBackupUnlocked');
+        localStorage.removeItem('devBackupDates');
+        
+        window.isDevMode = false;
+        
+        // メモリ上の変数を更新して画面をリフレッシュ
+        currentExp = parseInt(localStorage.getItem('dragonDiaryExp')) || 0;
+        gainExp(0); 
+        if (typeof renderAchievements === 'function') renderAchievements();
+      }
     });
   }
 
