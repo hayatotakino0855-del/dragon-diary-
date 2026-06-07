@@ -155,19 +155,18 @@ body {
 
 /* --- 新しい進化演出（YouTube同期用） --- */
 .evolution-charge {
-  animation: evolution-charge-anim 13s ease-in-out forwards;
+  animation: evolution-charge-anim 15s ease-in forwards;
 }
 
 @keyframes evolution-charge-anim {
-  0% { filter: brightness(1); transform: scale(1); opacity: 1; }
-  10% { filter: brightness(1.5); transform: scale(1.05); opacity: 0.8; }
-  20% { filter: brightness(2) drop-shadow(0 0 10px white); transform: scale(0.95); opacity: 1; }
-  40% { filter: brightness(2.5) drop-shadow(0 0 20px white); transform: scale(1.1); opacity: 0.6; }
-  60% { filter: brightness(3) drop-shadow(0 0 30px white); transform: scale(0.9); opacity: 1; }
-  80% { filter: brightness(4) drop-shadow(0 0 40px cyan); transform: scale(1.2); opacity: 0.5; }
-  90% { filter: brightness(5) drop-shadow(0 0 50px white); transform: scale(0.8); opacity: 1; }
-  95% { filter: brightness(10) drop-shadow(0 0 100px white); transform: scale(1.3); opacity: 0.8; }
-  100% { filter: brightness(20) drop-shadow(0 0 200px white); transform: scale(1.5); opacity: 1; }
+  0% { filter: brightness(1); opacity: 1; transform: translateX(0); }
+  20% { filter: brightness(1.2) drop-shadow(0 0 10px white); opacity: 0.9; transform: translateX(1px); }
+  40% { filter: brightness(1.5) drop-shadow(0 0 20px white); opacity: 1; transform: translateX(-1px); }
+  60% { filter: brightness(2) drop-shadow(0 0 30px cyan); opacity: 0.8; transform: translateX(2px); }
+  80% { filter: brightness(3) drop-shadow(0 0 50px white); opacity: 1; transform: translateX(-2px); }
+  90% { filter: brightness(5) drop-shadow(0 0 80px cyan); opacity: 0.9; transform: translateX(3px); }
+  95% { filter: brightness(8) drop-shadow(0 0 120px white); opacity: 1; transform: translateX(-3px); }
+  100% { filter: brightness(15) drop-shadow(0 0 200px white); opacity: 1; transform: translateX(0); }
 }
 
 /* 進化用エフェクト：基本（光） */

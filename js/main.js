@@ -450,12 +450,12 @@ function triggerEvolution(targetStageIndex) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, 1000);
 
-  // 2秒〜14秒: 成長しそうな演出（発光・脈打ち・点滅）
+  // 2秒〜16秒: 成長しそうな演出（発光・振動）
   setTimeout(() => {
     container.classList.add('evolution-charge');
   }, 2000);
 
-  // 15秒: 強い白い光と共に成長
+  // 17秒: 強い白い光と共に成長
   setTimeout(() => {
     // 閃光エフェクト
     container.classList.remove('evolution-charge');
@@ -486,7 +486,7 @@ function triggerEvolution(targetStageIndex) {
     // パーティクル発生
     updateDragonParticles(currentStageIndex);
 
-    // 16秒: フラッシュ解除し、進化終了
+    // 18秒: フラッシュ解除し、進化終了
     setTimeout(() => {
       container.classList.remove('flash-active');
       isEvolving = false;
@@ -495,7 +495,7 @@ function triggerEvolution(targetStageIndex) {
       }
     }, 1000);
     
-    // 約20秒 (動画が終わる頃) に必要なら元のBGMを再開
+    // 約22秒 (動画が終わる頃) に必要なら元のBGMを再開
     setTimeout(() => {
       const tempIframe = document.getElementById('tempEvoIframe');
       if (tempIframe) tempIframe.remove();
@@ -514,7 +514,7 @@ function triggerEvolution(targetStageIndex) {
       }
     }, 5000);
 
-  }, 15000);
+  }, 17000);
 }
 
 // 実際の稲妻（雷）のSVGを画面に生成する関数
