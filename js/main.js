@@ -1148,13 +1148,13 @@ function updateDragonNest(stageIndex) {
   const img = document.getElementById('dragonImage');
   if (!nest || !img) return;
   
-  if (stageIndex <= 2) { // 卵の時だけ少し小さくして巣を表示
+  if (stageIndex === 1) { // 第二段階（共鳴の卵）の時だけ小さくして巣を表示
     nest.src = 'assets/dragons/stage2_nest.png';
     nest.style.display = 'block';
     
-    // 少し小さくする (85%サイズにして中央配置)
-    const smallStyle = '85%';
-    const offsetStyle = '7.5%';
+    // 少し小さくする (60%サイズにして中央配置)
+    const smallStyle = '60%';
+    const offsetStyle = '20%';
     nest.style.width = smallStyle;
     nest.style.height = smallStyle;
     nest.style.top = offsetStyle;
