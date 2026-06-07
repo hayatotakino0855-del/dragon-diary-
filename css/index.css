@@ -171,7 +171,7 @@ body {
 
 /* 卵用の進化アニメーション（下部を軸にピクピクとした卵の孵化動作、拡大なし） */
 .evolution-charge-egg {
-  transform-origin: bottom center;
+  transform-origin: 50% 73%;
   animation: evolution-charge-egg-anim 15s ease-in-out forwards;
 }
 
