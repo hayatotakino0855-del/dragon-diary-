@@ -1208,9 +1208,9 @@ function renderAchievements() {
   if (grid) {
     grid.innerHTML = '';
     ACHIEVEMENTS.forEach(a => {
-      const isUnlocked = unlocked.includes(a.id);
+      const isUnlocked = window.isDevMode ? true : unlocked.includes(a.id);
       
-      // シークレットかつ未解放の場合は表示しない
+      // シークレットかつ未解放の場合は表示しない（開発者モード中は強制表示）
       if (a.isSecret && !isUnlocked) {
         return;
       }

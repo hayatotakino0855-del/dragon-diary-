@@ -153,6 +153,23 @@ body {
   animation: evolveFlash 0.8s ease-in-out;
 }
 
+/* --- 新しい進化演出（YouTube同期用） --- */
+.evolution-charge {
+  animation: evolution-charge-anim 13s ease-in-out forwards;
+}
+
+@keyframes evolution-charge-anim {
+  0% { filter: brightness(1); transform: scale(1); opacity: 1; }
+  10% { filter: brightness(1.5); transform: scale(1.05); opacity: 0.8; }
+  20% { filter: brightness(2) drop-shadow(0 0 10px white); transform: scale(0.95); opacity: 1; }
+  40% { filter: brightness(2.5) drop-shadow(0 0 20px white); transform: scale(1.1); opacity: 0.6; }
+  60% { filter: brightness(3) drop-shadow(0 0 30px white); transform: scale(0.9); opacity: 1; }
+  80% { filter: brightness(4) drop-shadow(0 0 40px cyan); transform: scale(1.2); opacity: 0.5; }
+  90% { filter: brightness(5) drop-shadow(0 0 50px white); transform: scale(0.8); opacity: 1; }
+  95% { filter: brightness(10) drop-shadow(0 0 100px white); transform: scale(1.3); opacity: 0.8; }
+  100% { filter: brightness(20) drop-shadow(0 0 200px white); transform: scale(1.5); opacity: 1; }
+}
+
 /* 進化用エフェクト：基本（光） */
 @keyframes evolutionBurstLight {
   0% { filter: brightness(1) drop-shadow(0 0 0px rgba(255, 255, 255, 0)); transform: scale(1); }

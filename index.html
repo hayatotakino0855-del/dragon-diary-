@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/index.css?v=87">
+  <link rel="stylesheet" href="css/index.css?v=88">
 </head>
 <body>
   <!-- プレイヤー登録モーダル -->
@@ -197,7 +197,7 @@
               今日の日記を書く
             </span>
           </button>
-          <button id="testExpButton" style="display: none; margin-top: 15px; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 10px; border-radius: 8px; width: 100%; cursor: pointer; font-family: var(--font-display); font-weight: bold;">【テスト】EXPを獲得 (+5000)</button>
+          <button id="devLevelUpBtn" class="cyber-button" style="display: none; margin-top: 15px; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 10px; border-radius: 8px; width: 100%; cursor: pointer; font-family: var(--font-display); font-weight: bold;">🔥 【開発者】次のレベルへ即進化</button>
         </div>
 
         <!-- 日記のエントリー -->
@@ -284,6 +284,16 @@
           <div class="setting-item" style="color: #ef4444;" id="logoutButton">
             ログアウト
           </div>
+          <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 10px; border-top: 1px solid var(--border-subtle); padding-top: 15px; margin-top: 5px;">
+            <span>コマンド</span>
+            <div style="display: flex; gap: 8px; width: 100%;">
+              <input type="text" id="devCommandInput" class="cyber-input" style="flex: 1; font-size: 0.8rem; padding: 8px;" placeholder="コマンドを入力">
+              <button id="devCommandApplyBtn" class="cyber-button" style="padding: 8px 12px; font-size: 0.8rem;">更新</button>
+              <button id="devCommandClearBtn" class="cyber-button" style="padding: 8px 12px; font-size: 0.8rem; background: var(--surface-light); border-color: var(--text-muted); color: var(--text-muted);">クリア</button>
+            </div>
+            <span id="devCommandMessage" style="font-size: 0.75rem; color: var(--accent-cyan); display: none;"></span>
+
+          </div>
           <div class="setting-item" id="googleAuthContainer" style="margin-top: 15px; border-top: 1px solid var(--border-subtle); padding-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
             <span style="font-size: 0.85rem;">Googleアカウント連携</span>
             <button id="googleAuthButton" class="cyber-button" style="width: 100%;">Googleでログイン</button>
@@ -361,11 +371,11 @@
   <!-- BGMプレイヤー用 -->
   <div id="youtubePlayer" style="position: absolute; width: 1px; height: 1px; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;"></div>
 
-  <script src="js/main.js?v=87"></script>
+  <script src="js/main.js?v=88"></script>
   <!-- Google API Scripts -->
   <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
   <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="js/google_api.js?v=87"></script>
+  <script src="js/google_api.js?v=88"></script>
 </body>
 </html>

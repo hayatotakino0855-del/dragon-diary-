@@ -56,9 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initDragonComments();
   initNotifications();
   initPowerGraphCanvas();
+  initThemeToggle();
+  initSettingsMenu();
+  initDevMode();
   initStatusCards();
   initRadarChart();
-  initTestExpButton();
   initTodayDate();
   
   // 初期状態の表示を更新
@@ -418,128 +420,80 @@ function triggerEvolution(targetStageIndex) {
   
   isEvolving = true; // 進化ロック
   
-  // 進化を見せるために強制的に一番上へスクロール
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  
-  // 対象の段階に応じてエフェクトとタイミングを切り替える
-  let effectClass = 'evolution-light';
-  let switchDelay = 1000;
-  let duration = 2000;
-  
-  const stormOverlay = document.getElementById('stormOverlay');
-  const rainContainer = document.getElementById('rainContainer');
-  const lightningFlash = document.getElementById('lightningFlash');
-  const dragonArea = document.getElementById('dragonArea');
-  
-  let useStorm = false;
-  let useLightning = false;
-
-  if (targetStageIndex >= 6) {
-    // 伝説の竜：黒雲、雨、激雷
-    effectClass = 'evolution-storm';
-    switchDelay = 1800;
-    duration = 4500;
-    useStorm = true;
-    useLightning = true;
-  } else if (targetStageIndex >= 5) {
-    // 古竜：黄金オーラと激しい雷
-    effectClass = 'evolution-golden-lightning';
-    switchDelay = 1800;
-    duration = 3500;
-    useLightning = true;
-  } else if (targetStageIndex >= 4) {
-    // 青年竜：雷エフェクトと振動
-    effectClass = 'evolution-lightning';
-    switchDelay = 1250;
-    duration = 2500;
-    useLightning = true;
-  } else if (targetStageIndex >= 3) {
-    // 少年竜：強烈な光とオーラ
-    effectClass = 'evolution-aura';
-    switchDelay = 1250;
-    duration = 2500;
+  // 0秒: BGMの再生準備
+  if (window.ytPlayer && typeof window.ytPlayer.pauseVideo === 'function') {
+    window.ytPlayer.pauseVideo(); // 既存のBGMを一時停止
   }
   
-  if (useStorm) {
-    if (stormOverlay) stormOverlay.classList.add('active');
-    if (dragonArea) dragonArea.classList.add('bring-to-front');
-    if (rainContainer) {
-      rainContainer.classList.add('active');
-      rainContainer.innerHTML = '';
-      for (let i = 0; i < 40; i++) {
-        const drop = document.createElement('div');
-        drop.className = 'rain-drop';
-        drop.style.left = `${Math.random() * 100}%`;
-        drop.style.animationDuration = `${0.3 + Math.random() * 0.3}s`;
-        drop.style.animationDelay = `${Math.random()}s`;
-        rainContainer.appendChild(drop);
-      }
-    }
-  }
+  const evoPlayer = document.createElement('iframe');
+  evoPlayer.width = '1';
+  evoPlayer.height = '1';
+  evoPlayer.style.position = 'absolute';
+  evoPlayer.style.top = '-9999px';
+  evoPlayer.allow = 'autoplay';
+  evoPlayer.src = 'https://www.youtube.com/embed/6jlUSGULrW0?autoplay=1&controls=0&showinfo=0&autohide=1';
+  document.body.appendChild(evoPlayer);
 
-  if (useLightning) {
-    if (lightningFlash) {
-      lightningFlash.classList.remove('active');
-      void lightningFlash.offsetWidth; // リフロー
-      lightningFlash.classList.add('active');
-    }
-    // 実際の稲妻（雷の形をした図形）を時間差で落とす
-    for(let i=0; i<3; i++) {
-      setTimeout(() => createLightningBolt(), i * 400 + Math.random() * 200);
-    }
-    if (targetStageIndex >= 6) { 
-      // 伝説の竜は後半にもさらに雷を落とす
-      for(let i=0; i<5; i++) {
-        setTimeout(() => createLightningBolt(), 1500 + i * 300 + Math.random() * 200);
-      }
-    }
-  }
-
-  // 発光エフェクト付与
-  container.classList.add(effectClass);
-  
-  // 時間差でパーティクルを発生
-  spawnTapParticles(container);
-  setTimeout(() => spawnTapParticles(container), 200);
-  setTimeout(() => spawnTapParticles(container), 400);
-  setTimeout(() => spawnTapParticles(container), 600);
-  if (targetStageIndex >= 3) setTimeout(() => spawnTapParticles(container), 800);
-  if (targetStageIndex >= 5) setTimeout(() => spawnTapParticles(container), 1000);
-
-  // 光が最も強いタイミングで新しい姿に切り替える
+  // 1.0秒〜1.5秒: ピロピロ音に合わせて画面トップへ強制移動
   setTimeout(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 1000);
+
+  // 2秒〜14秒: 成長しそうな演出（発光・脈打ち・点滅）
+  setTimeout(() => {
+    container.classList.add('evolution-charge');
+  }, 2000);
+
+  // 15秒: 強い白い光と共に成長
+  setTimeout(() => {
+    // 閃光エフェクト
+    container.classList.remove('evolution-charge');
+    container.classList.add('flash-active');
+    
+    // 画像切り替えとステータス更新
     currentStageIndex = targetStageIndex;
     const stage = DRAGON_STAGES[currentStageIndex];
-    const img = document.getElementById('dragonImage');
+    const imgElement = document.getElementById('dragonImage');
     const nameEl = document.querySelector('.dragon-name');
     const stageEl = document.querySelector('.dragon-stage');
-    
-    img.src = stage.image;
-    img.style.animation = `${stage.animation} 4s ease-in-out infinite`;
-    nameEl.textContent = stage.name;
-    stageEl.textContent = stage.stage;
-    
-    // 伝説の竜・古竜なら発光クラス付与
-    img.classList.remove('legendary-glow', 'mature-glow');
-    if (currentStageIndex === 5) {
-      img.classList.add('mature-glow');
-    } else if (currentStageIndex >= 6) {
-      img.classList.add('legendary-glow');
-    }
-    
-    updateDragonParticles(currentStageIndex);
-  }, switchDelay);
 
-  // エフェクト終了
-  setTimeout(() => {
-    container.classList.remove(effectClass);
-    if (useStorm) {
-      if (stormOverlay) stormOverlay.classList.remove('active');
-      if (rainContainer) rainContainer.classList.remove('active');
-      if (dragonArea) dragonArea.classList.remove('bring-to-front');
+    if (imgElement && stage) {
+      imgElement.src = stage.image;
+      imgElement.style.animation = `${stage.animation} 4s ease-in-out infinite`;
+      if (nameEl) nameEl.textContent = stage.name;
+      if (stageEl) stageEl.textContent = stage.stage;
+
+      // 伝説の竜・古竜なら発光クラス付与
+      imgElement.classList.remove('legendary-glow', 'mature-glow');
+      if (currentStageIndex === 5) {
+        imgElement.classList.add('mature-glow');
+      } else if (currentStageIndex >= 6) {
+        imgElement.classList.add('legendary-glow');
+      }
     }
-    isEvolving = false; // 進化ロック解除
-  }, duration);
+    
+    // パーティクル発生
+    updateDragonParticles(currentStageIndex);
+
+    // 16秒: フラッシュ解除し、進化終了
+    setTimeout(() => {
+      container.classList.remove('flash-active');
+      isEvolving = false;
+      if (typeof checkAchievements === 'function') {
+        checkAchievements(); // 進化後の状態での実績チェック
+      }
+    }, 1000);
+    
+    // 約20秒 (動画が終わる頃) にBGM用iframeを削除し、必要なら元のBGMを再開
+    setTimeout(() => {
+      if (evoPlayer.parentNode) evoPlayer.remove();
+      const bgmToggle = document.getElementById('bgmToggle');
+      if (bgmToggle && bgmToggle.checked && window.ytPlayer && typeof window.ytPlayer.playVideo === 'function') {
+        window.ytPlayer.playVideo();
+      }
+    }, 5000);
+
+  }, 15000);
 }
 
 // 実際の稲妻（雷）のSVGを画面に生成する関数
@@ -572,11 +526,63 @@ function createLightningBolt() {
   }, 400);
 }
 
-function initTestExpButton() {
-  const btn = document.getElementById('testExpButton');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      gainExp(5000); // 1回押すたびに5000EXP（1段階分）獲得
+function initDevMode() {
+  const input = document.getElementById('devCommandInput');
+  const applyBtn = document.getElementById('devCommandApplyBtn');
+  const clearBtn = document.getElementById('devCommandClearBtn');
+  const msg = document.getElementById('devCommandMessage');
+  const lvlBtn = document.getElementById('devLevelUpBtn');
+
+  if (applyBtn) {
+    applyBtn.addEventListener('click', () => {
+      if (input && input.value.trim() === '開発者モード') {
+        window.isDevMode = true;
+        if (msg) {
+          msg.textContent = '開発者モードを有効にしました';
+          msg.style.display = 'block';
+          msg.style.color = 'var(--accent-cyan)';
+        }
+        if (lvlBtn) lvlBtn.style.display = 'block';
+        if (typeof checkAchievements === 'function') checkAchievements(); // 全実績を仮表示
+      } else {
+        if (msg) {
+          msg.textContent = 'コマンドが無効です';
+          msg.style.display = 'block';
+          msg.style.color = '#ef4444';
+        }
+      }
+    });
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (input) input.value = '';
+      window.isDevMode = false;
+      if (msg) {
+        msg.textContent = '開発者モードを解除しました';
+        msg.style.display = 'block';
+        msg.style.color = 'var(--text-muted)';
+      }
+      if (lvlBtn) lvlBtn.style.display = 'none';
+      if (typeof checkAchievements === 'function') checkAchievements(); // 仮表示を戻す
+    });
+  }
+
+  if (lvlBtn) {
+    lvlBtn.addEventListener('click', () => {
+      if (!window.isDevMode) return;
+      
+      const currentStageIndex = getStageIndex(currentExp);
+      if (currentStageIndex >= STAGE_THRESHOLDS.length - 1) {
+        alert("すでに最終段階です。");
+        return;
+      }
+      
+      const nextThreshold = STAGE_THRESHOLDS[currentStageIndex + 1];
+      const neededExp = nextThreshold - currentExp;
+      if (neededExp > 0) {
+        gainExp(neededExp);
+      }
     });
   }
 }
