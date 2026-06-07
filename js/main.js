@@ -1165,12 +1165,8 @@ function updateDragonNest(stageIndex) {
   nest.style.top = '8px';
   nest.style.left = '0';
 
-  if (stageIndex === 1) { // 第二段階（覚醒の卵）の時は巣を表示
-    nest.src = 'assets/dragons/stage2_nest_padded.png?v=2';
-    nest.style.display = 'block';
-  } else {
-    nest.style.display = 'none';
-  }
+  // いずれの段階でも巣（藁）は非表示にする
+  nest.style.display = 'none';
 }
 
 // 卵専用アニメーション
