@@ -557,9 +557,7 @@ function initDevMode() {
       if (input) input.value = '';
       window.isDevMode = false;
       if (msg) {
-        msg.textContent = '開発者モードを解除しました';
-        msg.style.display = 'block';
-        msg.style.color = 'var(--text-muted)';
+        msg.style.display = 'none';
       }
       if (lvlBtn) lvlBtn.style.display = 'none';
       if (typeof checkAchievements === 'function') checkAchievements(); // 仮表示を戻す
