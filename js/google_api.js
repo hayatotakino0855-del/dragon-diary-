@@ -1077,14 +1077,14 @@ function showCalendarDiaries(year, month, day) {
 // 6. 実績システム（段階的獲得）
 // ==========================================
 const ACHIEVEMENTS = [
-  { id: 'first_step', name: 'はじめの一歩', desc: '累計1件', icon: 'assets/ui/badge_first_step.png', condition: (count, total, level, streak) => count >= 1 },
-  { id: '3days', name: '三日坊主突破', desc: '累計3件', icon: 'assets/ui/badge_3days.png', condition: (count, total, level, streak) => count >= 3 },
-  { id: 'birth', name: '竜の誕生', desc: '累計5件', icon: 'assets/ui/badge_birth.png', condition: (count, total, level, streak) => count >= 5 },
-  { id: '1week', name: '一週間の記録', desc: '累計7件', icon: 'assets/ui/badge_1week.png', condition: (count, total, level, streak) => count >= 7 },
-  { id: '2weeks', name: '二週間の軌跡', desc: '累計14件', icon: 'assets/ui/badge_2weeks.png', condition: (count, total, level, streak) => count >= 14 },
-  { id: '1month', name: '一ヶ月の継続', desc: '累計30件', icon: 'assets/ui/badge_1month.png', condition: (count, total, level, streak) => count >= 30 },
-  { id: '50days', name: '半百の記録', desc: '累計50件', icon: 'assets/ui/badge_50days.png', condition: (count, total, level, streak) => count >= 50 },
-  { id: '100days', name: '百日草', desc: '累計100件', icon: 'assets/ui/badge_100days.png', condition: (count, total, level, streak) => count >= 100 },
+  { id: 'first_step', name: 'はじめの一歩', desc: '累計1件', icon: 'assets/ui/badge_first_step.png', condition: (count, total, level, streak) => total >= 1 },
+  { id: '3days', name: '三日坊主突破', desc: '累計3件', icon: 'assets/ui/badge_3days.png', condition: (count, total, level, streak) => total >= 3 },
+  { id: 'birth', name: '竜の誕生', desc: '累計5件', icon: 'assets/ui/badge_birth.png', condition: (count, total, level, streak) => total >= 5 },
+  { id: '1week', name: '一週間の記録', desc: '累計7件', icon: 'assets/ui/badge_1week.png', condition: (count, total, level, streak) => total >= 7 },
+  { id: '2weeks', name: '二週間の軌跡', desc: '累計14件', icon: 'assets/ui/badge_2weeks.png', condition: (count, total, level, streak) => total >= 14 },
+  { id: '1month', name: '一ヶ月の継続', desc: '累計30件', icon: 'assets/ui/badge_1month.png', condition: (count, total, level, streak) => total >= 30 },
+  { id: '50days', name: '半百の記録', desc: '累計50件', icon: 'assets/ui/badge_50days.png', condition: (count, total, level, streak) => total >= 50 },
+  { id: '100days', name: '百日草', desc: '累計100件', icon: 'assets/ui/badge_100days.png', condition: (count, total, level, streak) => total >= 100 },
   
   // 連続記録実績
   { id: 'streak_3', name: '炎の三日間', desc: '連続3日', icon: 'assets/ui/badge_first_step.png', condition: (count, total, level, streak) => streak >= 3 },
