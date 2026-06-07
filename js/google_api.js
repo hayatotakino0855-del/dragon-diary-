@@ -1087,10 +1087,19 @@ const ACHIEVEMENTS = [
   { id: 'diary_365', name: '365日の記録', desc: '累計365件', icon: 'assets/ui/badge_diary_365.png', condition: (count, total, level, streak) => total >= 365 },
   
   // 連続記録実績
-  { id: 'streak_3', name: '3日連続記録', desc: '連続3日', icon: 'assets/ui/badge_streak_3.png', condition: (count, total, level, streak) => streak >= 3 },
-  { id: 'streak_7', name: '7日連続記録', desc: '連続7日', icon: 'assets/ui/badge_streak_7.png', condition: (count, total, level, streak) => streak >= 7 },
-  { id: 'streak_30', name: '30日連続記録', desc: '連続30日', icon: 'assets/ui/badge_streak_30.png', condition: (count, total, level, streak) => streak >= 30 },
-  { id: 'streak_100', name: '100日連続記録', desc: '連続100日', icon: 'assets/ui/badge_streak_100.png', condition: (count, total, level, streak) => streak >= 100 },
+  { id: 'streak_3', name: '3日連続記録', desc: '連続3日', icon: 'assets/ui/badge_streak_3.svg', condition: (count, total, level, streak) => streak >= 3 },
+  { id: 'streak_7', name: '7日連続記録', desc: '連続7日', icon: 'assets/ui/badge_streak_7.svg', condition: (count, total, level, streak) => streak >= 7 },
+  { id: 'streak_30', name: '30日連続記録', desc: '連続30日', icon: 'assets/ui/badge_streak_30.svg', condition: (count, total, level, streak) => streak >= 30 },
+  { id: 'streak_100', name: '100日連続記録', desc: '連続100日', icon: 'assets/ui/badge_streak_100.svg', condition: (count, total, level, streak) => streak >= 100 },
+  { id: 'streak_150', name: '150日連続記録', desc: '連続150日', icon: 'assets/ui/badge_streak_150.svg', condition: (count, total, level, streak) => streak >= 150 },
+  { id: 'streak_200', name: '200日連続記録', desc: '連続200日', icon: 'assets/ui/badge_streak_200.svg', condition: (count, total, level, streak) => streak >= 200 },
+  { id: 'streak_250', name: '250日連続記録', desc: '連続250日', icon: 'assets/ui/badge_streak_250.svg', condition: (count, total, level, streak) => streak >= 250 },
+  { id: 'streak_300', name: '300日連続記録', desc: '連続300日', icon: 'assets/ui/badge_streak_300.svg', condition: (count, total, level, streak) => streak >= 300 },
+  { id: 'streak_350', name: '350日連続記録', desc: '連続350日', icon: 'assets/ui/badge_streak_350.svg', condition: (count, total, level, streak) => streak >= 350 },
+  { id: 'streak_365', name: '365日連続記録', desc: '連続365日', icon: 'assets/ui/badge_streak_365.svg', condition: (count, total, level, streak) => streak >= 365 },
+  { id: 'streak_400', name: '400日連続記録', desc: '連続400日', icon: 'assets/ui/badge_streak_400.svg', condition: (count, total, level, streak) => streak >= 400 },
+  { id: 'streak_450', name: '450日連続記録', desc: '連続450日', icon: 'assets/ui/badge_streak_450.svg', condition: (count, total, level, streak) => streak >= 450 },
+  { id: 'streak_500', name: '500日連続記録', desc: '連続500日', icon: 'assets/ui/badge_streak_500.svg', condition: (count, total, level, streak) => streak >= 500 },
 
   // ドラゴンの成長実績
   { id: 'stage_2', name: '第2段階：覚醒の卵', desc: 'Lv15到達', icon: 'assets/ui/badge_stage_2.png', condition: (count, total, level, streak, exp) => level >= 15 },
