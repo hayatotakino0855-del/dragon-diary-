@@ -1154,12 +1154,23 @@ function updateDragonNest(stageIndex) {
   const img = document.getElementById('dragonImage');
   if (!nest || !img) return;
   
-  // どの段階でも藁は非表示にし、卵はデフォルトサイズ（100%）にする
-  nest.style.display = 'none';
+  // デフォルトサイズにリセット（パディング付き画像でサイズを統一したため）
   img.style.width = '100%';
   img.style.height = '100%';
   img.style.top = '8px'; // CSSのデフォルト値
   img.style.left = '0';
+  
+  nest.style.width = '100%';
+  nest.style.height = '100%';
+  nest.style.top = '8px';
+  nest.style.left = '0';
+
+  if (stageIndex === 1) { // 第二段階（覚醒の卵）の時は巣を表示
+    nest.src = 'assets/dragons/stage2_nest_padded.png';
+    nest.style.display = 'block';
+  } else {
+    nest.style.display = 'none';
+  }
 }
 
 // 卵専用アニメーション
