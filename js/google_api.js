@@ -1085,6 +1085,44 @@ function getUnlockedAchievements() {
 function saveUnlockedAchievements(unlocked) {
   localStorage.setItem('unlockedAchievements', JSON.stringify(unlocked));
 }
+function getAchievementDates() {
+  return JSON.parse(localStorage.getItem('dragonDiaryAchievementDates') || '{}');
+}
+function saveAchievementDates(dates) {
+  localStorage.setItem('dragonDiaryAchievementDates', JSON.stringify(dates));
+}
+
+function showAchievementDetail(a, isUnlocked) {
+  const dates = getAchievementDates();
+  const dateMs = dates[a.id];
+  let dateStr = '未獲得';
+  if (isUnlocked) {
+    if (dateMs) {
+      const d = new Date(dateMs);
+      dateStr = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 獲得`;
+    } else {
+      dateStr = '獲得済み';
+    }
+  }
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.style.display = 'flex';
+  modal.style.zIndex = '3000';
+  modal.innerHTML = `
+    <div class="modal-content cyber-panel" style="text-align: center; max-width: 300px;">
+      <img src="${a.icon}" style="width: 80px; height: 80px; margin-bottom: 15px; filter: ${isUnlocked ? 'none' : 'grayscale(100%) opacity(0.5)'};">
+      <h3 style="margin-bottom: 10px; color: ${isUnlocked ? 'var(--accent-cyan)' : 'var(--text-muted)'};">${isUnlocked ? a.name : '???'}</h3>
+      <p style="margin-bottom: 10px; font-size: 0.95rem; color: var(--text-color);">条件: ${a.desc}</p>
+      <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">${dateStr}</div>
+      <button class="cyber-button" onclick="this.closest('.modal-overlay').remove()">閉じる</button>
+    </div>
+  `;
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+  document.body.appendChild(modal);
+}
 
 function checkAchievements() {
   // 実績判定の基準値（count）を、「6月1日以降に書いた日記の件数」にする
@@ -1100,17 +1138,20 @@ function checkAchievements() {
   }
 
   let unlocked = getUnlockedAchievements();
+  let dates = getAchievementDates();
   let newlyUnlocked = [];
 
   ACHIEVEMENTS.forEach(a => {
     if (a.condition(count) && !unlocked.includes(a.id)) {
       unlocked.push(a.id);
       newlyUnlocked.push(a);
+      dates[a.id] = Date.now();
     }
   });
   
   if (newlyUnlocked.length > 0) {
     saveUnlockedAchievements(unlocked);
+    saveAchievementDates(dates);
     renderAchievements();
 
     // 新規解放された実績を通知する
@@ -1147,9 +1188,11 @@ function renderAchievements() {
 
       const card = document.createElement('div');
       card.className = 'achievement-card ' + (isUnlocked ? 'unlocked' : 'locked');
+      card.style.cursor = 'pointer';
+      card.onclick = () => showAchievementDetail(a, isUnlocked);
       card.innerHTML = `
         <img src="${a.icon}" class="achieve-icon-img">
-        <div class="achieve-name">${a.name}</div>
+        <div class="achieve-name">${isUnlocked ? a.name : '???'}</div>
       `;
       grid.appendChild(card);
     });
@@ -1162,6 +1205,8 @@ function renderAchievements() {
     unlockedAchievements.slice(-3).reverse().forEach(a => {
       const div = document.createElement('div');
       div.className = 'achieve-badge';
+      div.style.cursor = 'pointer';
+      div.onclick = () => showAchievementDetail(a, true);
       div.innerHTML = `<img src="${a.icon}" class="badge-img"><span>${a.name}</span>`;
       homeGrid.appendChild(div);
     });
