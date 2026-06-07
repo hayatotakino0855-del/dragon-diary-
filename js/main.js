@@ -576,25 +576,35 @@ function updateDragonParticles(stageIndex) {
   else if (stageIndex >= 5) PARTICLE_COUNT = 24; // 古竜
   else if (stageIndex >= 4) PARTICLE_COUNT = 18; // 青年竜
   else if (stageIndex >= 3) PARTICLE_COUNT = 14; // 幼竜
-  else if (stageIndex === 1) PARTICLE_COUNT = 20; // 覚醒の卵（第2段階）はキラキラを多めに
+  else if (stageIndex === 1) PARTICLE_COUNT = 50; // 覚醒の卵（第2段階）はキラキラを圧倒的に多く
 
   for (let i = 0; i < PARTICLE_COUNT; i++) {
     const particle = document.createElement('div');
     particle.className = 'particle';
 
     // ランダムな位置と遅延
-    const x = 30 + Math.random() * 40; // 中央付近に集中
-    const y = 40 + Math.random() * 30;
+    let x = 30 + Math.random() * 40; // 中央付近に集中
+    let y = 40 + Math.random() * 30;
+    
+    // 第2段階（覚醒の卵）の時は広がりとサイズを派手にする
+    let baseSize = 2;
+    if (stageIndex === 1) {
+      x = 10 + Math.random() * 80; // より広く
+      y = 20 + Math.random() * 60; // より広く
+      baseSize = 3 + Math.random() * 2; // 少し大きめ
+    }
+
     const delay = Math.random() * 3;
-    const duration = 2 + Math.random() * 2;
-    const size = 2 + Math.random() * 3;
+    const duration = 1.5 + Math.random() * 2; // 少し速く
+    const size = baseSize + Math.random() * 3;
 
     // 色のバリエーション
     const colors = [
-      'rgba(139, 92, 246, 0.8)',   // violet
-      'rgba(74, 125, 255, 0.8)',   // blue
-      'rgba(34, 211, 238, 0.6)',   // cyan
-      'rgba(255, 255, 255, 0.4)',  // white
+      'rgba(139, 92, 246, 0.9)',   // violet
+      'rgba(74, 125, 255, 0.9)',   // blue
+      'rgba(34, 211, 238, 0.8)',   // cyan
+      'rgba(255, 255, 255, 0.8)',  // white
+      'rgba(255, 215, 0, 0.7)'     // gold (特別感)
     ];
     const color = colors[Math.floor(Math.random() * colors.length)];
 
@@ -606,7 +616,7 @@ function updateDragonParticles(stageIndex) {
       background: ${color};
       animation-delay: ${delay}s;
       animation-duration: ${duration}s;
-      box-shadow: 0 0 ${size * 2}px ${color};
+      box-shadow: 0 0 ${size * 2.5}px ${color};
     `;
 
     container.appendChild(particle);
