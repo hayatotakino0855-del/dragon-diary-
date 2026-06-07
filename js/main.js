@@ -135,15 +135,32 @@ window.showAchievementToast = function(title, icon) {
   `;
   document.body.appendChild(toast);
 
+  // 効果音(YouTube動画)の再生用隠しiframeを動的に生成
+  const sePlayer = document.createElement('iframe');
+  sePlayer.width = '1';
+  sePlayer.height = '1';
+  sePlayer.style.position = 'absolute';
+  sePlayer.style.top = '-9999px';
+  sePlayer.style.opacity = '0';
+  sePlayer.style.pointerEvents = 'none';
+  sePlayer.allow = 'autoplay';
+  sePlayer.src = 'https://www.youtube.com/embed/2BsBAQnFIVg?autoplay=1&controls=0&showinfo=0&autohide=1';
+  document.body.appendChild(sePlayer);
+
   // 表示アニメーション
   setTimeout(() => {
     toast.style.top = '30px';
   }, 100);
 
-  // 非表示アニメーション
+  // 非表示アニメーションと効果音iframeの削除
   setTimeout(() => {
     toast.style.top = '-100px';
-    setTimeout(() => toast.remove(), 500);
+    setTimeout(() => {
+      toast.remove();
+      if (sePlayer && sePlayer.parentNode) {
+        sePlayer.parentNode.removeChild(sePlayer);
+      }
+    }, 500);
   }, 4000);
 };
 
