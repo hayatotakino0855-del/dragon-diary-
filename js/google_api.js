@@ -1100,12 +1100,17 @@ const ACHIEVEMENTS = [
   { id: 'stage_6', name: '第6段階：古竜', desc: 'Lv80到達', icon: 'assets/ui/badge_stage_6.png', condition: (count, total, level, streak, exp) => level >= 80 },
   { id: 'stage_7', name: '第7段階：伝説の竜', desc: 'Lv100到達', icon: 'assets/ui/badge_stage_7.png', condition: (count, total, level, streak, exp) => level >= 100 },
 
-  // プレイヤーレベル実績
-  { id: 'level_20', name: 'Lv20到達', desc: 'プレイヤーLv20', icon: 'assets/ui/badge_level_20.png', condition: (count, total, level, streak, exp) => level >= 20 },
-  { id: 'level_40', name: 'Lv40到達', desc: 'プレイヤーLv40', icon: 'assets/ui/badge_level_40.png', condition: (count, total, level, streak, exp) => level >= 40 },
-  { id: 'level_60', name: 'Lv60到達', desc: 'プレイヤーLv60', icon: 'assets/ui/badge_level_60.png', condition: (count, total, level, streak, exp) => level >= 60 },
-  { id: 'level_80', name: 'Lv80到達', desc: 'プレイヤーLv80', icon: 'assets/ui/badge_level_80.png', condition: (count, total, level, streak, exp) => level >= 80 },
-  { id: 'level_100', name: 'Lv100到達', desc: 'プレイヤーLv100', icon: 'assets/ui/badge_level_100.png', condition: (count, total, level, streak, exp) => level >= 100 }
+  // 称号・プレイヤーレベル実績
+  { id: 'title_10', name: '称号：駆け出しの書記', desc: 'プレイヤーLv10到達', icon: 'assets/ui/badge_title_lv10.png', condition: (count, total, level, streak, exp) => level >= 10 },
+  { id: 'title_20', name: '称号：竜卵の守り人', desc: 'プレイヤーLv20到達', icon: 'assets/ui/badge_title_lv20.png', condition: (count, total, level, streak, exp) => level >= 20 },
+  { id: 'title_30', name: '称号：蒼穹の龍使い', desc: 'プレイヤーLv30到達', icon: 'assets/ui/badge_title_lv30.png', condition: (count, total, level, streak, exp) => level >= 30 },
+  { id: 'title_40', name: '称号：魔導の書記官', desc: 'プレイヤーLv40到達', icon: 'assets/ui/badge_title_lv40.png', condition: (count, total, level, streak, exp) => level >= 40 },
+  { id: 'title_50', name: '称号：銀翼の年代記作家', desc: 'プレイヤーLv50到達', icon: 'assets/ui/badge_title_lv50.png', condition: (count, total, level, streak, exp) => level >= 50 },
+  { id: 'title_60', name: '称号：黄昏の竜騎士', desc: 'プレイヤーLv60到達', icon: 'assets/ui/badge_title_lv60.png', condition: (count, total, level, streak, exp) => level >= 60 },
+  { id: 'title_70', name: '称号：深淵の賢者', desc: 'プレイヤーLv70到達', icon: 'assets/ui/badge_title_lv70.png', condition: (count, total, level, streak, exp) => level >= 70 },
+  { id: 'title_80', name: '称号：星読みの大魔導士', desc: 'プレイヤーLv80到達', icon: 'assets/ui/badge_title_lv80.png', condition: (count, total, level, streak, exp) => level >= 80 },
+  { id: 'title_90', name: '称号：神話の語り部', desc: 'プレイヤーLv90到達', icon: 'assets/ui/badge_title_lv90.png', condition: (count, total, level, streak, exp) => level >= 90 },
+  { id: 'title_100', name: '称号：伝説の竜王', desc: 'プレイヤーLv100到達', icon: 'assets/ui/badge_title_lv100.png', condition: (count, total, level, streak, exp) => level >= 100 }
 ];
 
 function getUnlockedAchievements() {
