@@ -1088,16 +1088,16 @@ const ACHIEVEMENTS = [
   { id: '100days', name: '百日草', desc: '累計100件', icon: 'assets/ui/badge_100days.png', condition: (count, total, level, streak) => total >= 100 },
   
   // 連続記録実績
-  { id: 'streak_3', name: '炎の三日間', desc: '連続3日', icon: 'assets/ui/badge_first_step.png', condition: (count, total, level, streak) => streak >= 3 },
-  { id: 'streak_7', name: '一週間の熱狂', desc: '連続7日', icon: 'assets/ui/badge_1week.png', condition: (count, total, level, streak) => streak >= 7 },
-  { id: 'streak_30', name: '三十日の執念', desc: '連続30日', icon: 'assets/ui/badge_1month.png', condition: (count, total, level, streak) => streak >= 30 },
+  { id: 'streak_3', name: '炎の三日間', desc: '連続3日', icon: 'assets/ui/badge_streak_3.png', condition: (count, total, level, streak) => streak >= 3 },
+  { id: 'streak_7', name: '一週間の熱狂', desc: '連続7日', icon: 'assets/ui/badge_streak_7.png', condition: (count, total, level, streak) => streak >= 7 },
+  { id: 'streak_30', name: '三十日の執念', desc: '連続30日', icon: 'assets/ui/badge_streak_30.png', condition: (count, total, level, streak) => streak >= 30 },
 
   // プレイヤーレベル実績（経験値獲得ポイントに応じた実績）
-  { id: 'lv2', name: '竜の目覚め', desc: 'プレイヤーLv2到達', icon: 'assets/ui/badge_first_step.png', condition: (count, total, level, streak, exp) => level >= 2 },
-  { id: 'lv3', name: '竜騎士の道', desc: 'プレイヤーLv3到達', icon: 'assets/ui/badge_3days.png', condition: (count, total, level, streak, exp) => level >= 3 },
-  { id: 'lv4', name: '絆の深まり', desc: 'プレイヤーLv4到達', icon: 'assets/ui/badge_birth.png', condition: (count, total, level, streak, exp) => level >= 4 },
-  { id: 'lv5', name: '共鳴する心', desc: 'プレイヤーLv5到達', icon: 'assets/ui/badge_1week.png', condition: (count, total, level, streak, exp) => level >= 5 },
-  { id: 'lv7', name: '大空への憧れ', desc: 'プレイヤーLv7到達', icon: 'assets/ui/badge_2weeks.png', condition: (count, total, level, streak, exp) => level >= 7 },
+  { id: 'lv2', name: '竜の目覚め', desc: 'プレイヤーLv2到達', icon: 'assets/ui/badge_lv2.png', condition: (count, total, level, streak, exp) => level >= 2 },
+  { id: 'lv3', name: '竜騎士の道', desc: 'プレイヤーLv3到達', icon: 'assets/ui/badge_lv3.png', condition: (count, total, level, streak, exp) => level >= 3 },
+  { id: 'lv4', name: '絆の深まり', desc: 'プレイヤーLv4到達', icon: 'assets/ui/badge_lv4.png', condition: (count, total, level, streak, exp) => level >= 4 },
+  { id: 'lv5', name: '共鳴する心', desc: 'プレイヤーLv5到達', icon: 'assets/ui/badge_lv5.png', condition: (count, total, level, streak, exp) => level >= 5 },
+  { id: 'lv7', name: '大空への憧れ', desc: 'プレイヤーLv7到達', icon: 'assets/ui/badge_lv7.png', condition: (count, total, level, streak, exp) => level >= 7 },
 
   // シークレット実績
   { id: 'secret_999', name: '伝説の探求者', desc: '秘密の条件', icon: 'assets/ui/badge_100diary.png', condition: (count, total, level, streak, exp) => total >= 999, isSecret: true },
