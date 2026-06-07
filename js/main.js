@@ -47,7 +47,7 @@ window.playSE = function(type) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  initDragonParticles();
+  // updateDragonParticlesはgainExp内で呼ばれるため削除
   initDragonTap();
   initRandomVideoActions(); // ランダム動画再生機能を追加
   initNavigation();
@@ -336,6 +336,8 @@ function gainExp(amount) {
       } else if (currentStageIndex >= 6) {
         img.classList.add('legendary-glow');
       }
+      
+      updateDragonParticles(currentStageIndex);
     }
   } else if (newUnlockedStage > maxUnlockedStage) {
     // 経験値を獲得して新しい段階に達した場合のみ、進化アニメーションを再生
@@ -507,6 +509,8 @@ function triggerEvolution(targetStageIndex) {
     } else if (currentStageIndex >= 6) {
       img.classList.add('legendary-glow');
     }
+    
+    updateDragonParticles(currentStageIndex);
   }, switchDelay);
 
   // エフェクト終了
@@ -561,11 +565,18 @@ function initTestExpButton() {
 }
 
 // --- ドラゴンのパーティクルエフェクト ---
-function initDragonParticles() {
+function updateDragonParticles(stageIndex) {
   const container = document.getElementById('dragonParticles');
   if (!container) return;
+  
+  container.innerHTML = '';
 
-  const PARTICLE_COUNT = 8;
+  let PARTICLE_COUNT = 8;
+  if (stageIndex >= 6) PARTICLE_COUNT = 30; // 伝説の竜
+  else if (stageIndex >= 5) PARTICLE_COUNT = 24; // 古竜
+  else if (stageIndex >= 4) PARTICLE_COUNT = 18; // 青年竜
+  else if (stageIndex >= 3) PARTICLE_COUNT = 14; // 幼竜
+  else if (stageIndex === 1) PARTICLE_COUNT = 20; // 覚醒の卵（第2段階）はキラキラを多めに
 
   for (let i = 0; i < PARTICLE_COUNT; i++) {
     const particle = document.createElement('div');
@@ -1011,6 +1022,7 @@ document.getElementById('dragonContainer')?.addEventListener('click', (e) => {
         img.classList.add('legendary-glow');
       }
 
+      updateDragonParticles(currentStageIndex);
       img.style.opacity = '1';
     }, 300);
   } else {
