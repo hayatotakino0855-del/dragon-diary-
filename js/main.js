@@ -146,6 +146,7 @@ window.showAchievementToast = function(title, icon) {
   // 効果音の再生 (ネイティブAudioによる再生でBGMを停止させない)
   const seAudio = document.getElementById('achievementSeAudio');
   if (seAudio) {
+    seAudio.muted = false; // iOS用アンロック時のミュートを解除
     seAudio.currentTime = 0;
     seAudio.volume = 0.7; // 適切な音量
     seAudio.play().catch(e => console.log('SE autoplay blocked by browser policy:', e));
@@ -1984,10 +1985,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const unlockAudio = () => {
     const seAudio = document.getElementById('achievementSeAudio');
     if (seAudio) {
-      seAudio.volume = 0;
+      seAudio.muted = true; // iOSはvolume=0を無視するためmutedを使用
       seAudio.play().then(() => {
         seAudio.pause();
         seAudio.currentTime = 0;
+        seAudio.muted = false;
         document.removeEventListener('click', unlockAudio);
         document.removeEventListener('touchstart', unlockAudio);
       }).catch(e => console.log('Audio unlock failed:', e));
