@@ -419,8 +419,8 @@ function triggerEvolution(targetStageIndex) {
   isEvolving = true; // 進化ロック
   
   // 0秒: BGMの再生準備
-  if (window.ytPlayer && typeof window.ytPlayer.pauseVideo === 'function') {
-    window.ytPlayer.pauseVideo(); // 既存のBGMを一時停止
+  if (typeof ytPlayer !== 'undefined' && ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
+    ytPlayer.pauseVideo(); // 既存のBGMを一時停止
   }
   
   const evoPlayer = document.createElement('iframe');
@@ -486,8 +486,8 @@ function triggerEvolution(targetStageIndex) {
     setTimeout(() => {
       if (evoPlayer.parentNode) evoPlayer.remove();
       const bgmToggle = document.getElementById('bgmToggle');
-      if (bgmToggle && bgmToggle.checked && window.ytPlayer && typeof window.ytPlayer.playVideo === 'function') {
-        window.ytPlayer.playVideo();
+      if (bgmToggle && bgmToggle.checked && typeof ytPlayer !== 'undefined' && ytPlayer && typeof ytPlayer.playVideo === 'function') {
+        ytPlayer.playVideo();
       }
     }, 5000);
 
@@ -568,7 +568,13 @@ function initDevMode() {
     lvlBtn.addEventListener('click', () => {
       if (!window.isDevMode) return;
       
-      const currentStageIndex = getStageIndex(currentExp);
+      let currentStageIndex = 0;
+      for (let i = 0; i < STAGE_THRESHOLDS.length; i++) {
+        if (currentExp >= STAGE_THRESHOLDS[i]) {
+          currentStageIndex = i;
+        }
+      }
+      
       if (currentStageIndex >= STAGE_THRESHOLDS.length - 1) {
         alert("すでに最終段階です。");
         return;
