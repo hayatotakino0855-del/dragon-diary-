@@ -389,7 +389,7 @@ function gainExp(amount) {
     if (maxLabel) maxLabel.textContent = nextThreshold;
     if (midLabel) {
       if (nextThreshold > currentThreshold) {
-        midLabel.textContent = Math.round(currentExp);
+        midLabel.textContent = Math.round((currentThreshold + nextThreshold) / 2);
       } else {
         midLabel.textContent = "MAX";
       }
@@ -1815,6 +1815,22 @@ window.onYouTubeIframeAPIReady = function() {
       'rel': 0
     }
   });
+  
+  // ユーザー操作時に音声をアンロックする
+  const unlockAudio = () => {
+    if (window.seYoutubePlayer && typeof window.seYoutubePlayer.playVideo === 'function') {
+      // 一瞬再生してすぐ止めることでオーディオコンテキストをアンロック
+      window.seYoutubePlayer.playVideo();
+      setTimeout(() => {
+        window.seYoutubePlayer.pauseVideo();
+        window.seYoutubePlayer.seekTo(0);
+      }, 50);
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('touchstart', unlockAudio);
+    }
+  };
+  document.addEventListener('click', unlockAudio);
+  document.addEventListener('touchstart', unlockAudio);
 };
 
 function initBgm() {
