@@ -1074,9 +1074,17 @@ const ACHIEVEMENTS = [
   { id: '100days', name: '百日草', desc: '累計100件', icon: 'assets/ui/badge_100days.png', condition: (count) => count >= 100 },
   
   // シークレット実績
-  { id: 'secret_77', name: 'ラッキーセブン', desc: '秘密の条件', icon: 'assets/ui/badge_1week.png', condition: (count) => count == 77, isSecret: true },
-  { id: 'secret_365', name: '星巡りの旅人', desc: '秘密の条件', icon: 'assets/ui/badge_1month.png', condition: (count) => count >= 365, isSecret: true },
-  { id: 'secret_999', name: '伝説の竜使い', desc: '秘密の条件', icon: 'assets/ui/badge_100days.png', condition: (count) => count >= 999, isSecret: true },
+  { id: 'secret_77', name: 'ラッキーセブン', desc: '秘密の条件', icon: 'assets/ui/badge_1week.png', condition: (count, total, level) => count == 77, isSecret: true },
+  { id: 'secret_365', name: '星巡りの旅人', desc: '秘密の条件', icon: 'assets/ui/badge_1month.png', condition: (count, total, level) => count >= 365, isSecret: true },
+  { id: 'secret_700', name: '七百の言霊', desc: '秘密の条件', icon: 'assets/ui/badge_crystal.png', condition: (count, total, level) => total >= 700, isSecret: true },
+  { id: 'secret_999', name: '伝説の探求者', desc: '秘密の条件', icon: 'assets/ui/badge_100diary.png', condition: (count, total, level) => total >= 999, isSecret: true },
+  { id: 'secret_1000', name: '千年竜の契り（勲章）', desc: '秘密の条件', icon: 'assets/ui/badge_master.png', condition: (count, total, level) => total >= 1000, isSecret: true },
+  
+  // プレイヤーレベルのシークレット実績
+  { id: 'secret_lv10', name: '見習い竜使い', desc: '秘密の条件', icon: 'assets/ui/badge_lv10.png', condition: (count, total, level) => level >= 10, isSecret: true },
+  { id: 'secret_lv30', name: '熟練の竜使い', desc: '秘密の条件', icon: 'assets/ui/badge_claw.png', condition: (count, total, level) => level >= 30, isSecret: true },
+  { id: 'secret_lv50', name: '竜の導き手', desc: '秘密の条件', icon: 'assets/ui/badge_eye.png', condition: (count, total, level) => level >= 50, isSecret: true },
+  { id: 'secret_lv100', name: 'マスタードラゴン（勲章）', desc: '秘密の条件', icon: 'assets/ui/badge_master.png', condition: (count, total, level) => level >= 100, isSecret: true },
 ];
 
 function getUnlockedAchievements() {
@@ -1144,7 +1152,9 @@ function checkAchievements() {
   // 実績判定の基準値（count）を、「6月1日以降に書いた日記の件数」にする
   const juneFirst = new Date(2026, 5, 1).getTime();
   let count = 0;
+  let totalCount = 0;
   if (window.allDiaries) {
+    totalCount = window.allDiaries.length;
     window.allDiaries.forEach(d => {
       let dateObj = d.start && (d.start.date || d.start.dateTime);
       if (dateObj && new Date(dateObj).getTime() >= juneFirst) {
@@ -1156,9 +1166,12 @@ function checkAchievements() {
   let unlocked = getUnlockedAchievements();
   let dates = getAchievementDates();
   let newlyUnlocked = [];
+  
+  // main.js のグローバル変数 playerLevel を取得（なければ 1）
+  const currentLevel = window.playerLevel || 1;
 
   ACHIEVEMENTS.forEach(a => {
-    if (a.condition(count) && !unlocked.includes(a.id)) {
+    if (a.condition(count, totalCount, currentLevel) && !unlocked.includes(a.id)) {
       unlocked.push(a.id);
       newlyUnlocked.push(a);
       dates[a.id] = Date.now();
