@@ -642,14 +642,6 @@ function initDevMode() {
           msg.style.color = 'var(--accent-cyan)';
         }
       } else if (input && input.value.trim() === '実績リセット') {
-        if (!window.allDiaries || window.allDiaries.length === 0) {
-          if (msg) {
-            msg.textContent = 'カレンダーデータ読込前です。数秒待つか日記連携をしてから再度実行してください';
-            msg.style.display = 'block';
-            msg.style.color = '#ef4444';
-          }
-          return;
-        }
         // 現在のEXPと日記数に基づいて実績を完全に再計算・リセットするコマンド
         localStorage.removeItem('unlockedAchievements');
         localStorage.removeItem('achievementDates');
