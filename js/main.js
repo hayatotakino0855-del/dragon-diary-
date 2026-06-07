@@ -186,26 +186,26 @@ const STAGE_THRESHOLDS = [0, 1050, 4350, 9900, 17700, 31600, 49500];
 
 // --- 称号システム（レベル連動） ---
 const PLAYER_TITLES = [
-  { minLevel: 1,  title: '見習い記録者' },
-  { minLevel: 2,  title: '駆け出しの書記' },
-  { minLevel: 3,  title: '竜卵の守り人' },
-  { minLevel: 5,  title: '蒼穹の龍使い' },
-  { minLevel: 7,  title: '魔導の書記官' },
-  { minLevel: 10, title: '銀翼の年代記作家' },
-  { minLevel: 15, title: '黄昏の竜騎士' },
-  { minLevel: 20, title: '深淵の賢者' },
-  { minLevel: 30, title: '星読みの大魔導士' },
-  { minLevel: 50, title: '伝説の竜王' },
+  { minStage: 0, title: '見習い記録者' },
+  { minStage: 1, title: '駆け出しの竜使い' },
+  { minStage: 2, title: '竜使い' },
+  { minStage: 3, title: '熟練の竜使い' },
+  { minStage: 4, title: '竜騎士' },
+  { minStage: 5, title: '竜導師' },
+  { minStage: 6, title: '伝説の竜王' },
 ];
 
-function updatePlayerTitle(level) {
-  let title = PLAYER_TITLES[0].title;
-  for (let i = PLAYER_TITLES.length - 1; i >= 0; i--) {
-    if (level >= PLAYER_TITLES[i].minLevel) {
-      title = PLAYER_TITLES[i].title;
-      break;
+function updatePlayerTitle(exp) {
+  let stageIdx = 0;
+  for (let i = 0; i < STAGE_THRESHOLDS.length; i++) {
+    if (exp >= STAGE_THRESHOLDS[i]) {
+      stageIdx = i;
     }
   }
+  let title = PLAYER_TITLES[0].title;
+  const match = PLAYER_TITLES.find(t => t.minStage === stageIdx);
+  if (match) title = match.title;
+
   const el = document.getElementById('display-player-title');
   if (el) el.textContent = title;
 }
@@ -303,7 +303,7 @@ function gainExp(amount) {
   
   const levelDisplay = document.getElementById('playerLevelDisplay');
   if (levelDisplay) levelDisplay.textContent = `プレイヤーレベル: ${playerLevel}`;
-  updatePlayerTitle(playerLevel);
+  updatePlayerTitle(currentExp);
   const expDisplay = document.getElementById('powerValueDisplay');
   if (expDisplay) expDisplay.innerHTML = `${currentExp} <span style="font-size: 0.6em; color: var(--text-muted);">EXP</span>`;
 
