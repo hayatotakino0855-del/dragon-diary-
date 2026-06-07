@@ -415,6 +415,10 @@ function gainExp(amount) {
 }
 
 function triggerEvolution(targetStageIndex) {
+  isEvolving = true;
+  if (typeof window.stopDragonVideo === 'function') {
+    window.stopDragonVideo();
+  }
   const container = document.getElementById('dragonContainer');
   if (!container) return;
   
@@ -959,6 +963,11 @@ function initRandomVideoActions() {
   let actionTimer;
 
   const playRandomAction = () => {
+    if (typeof isEvolving !== 'undefined' && isEvolving) {
+      scheduleNextAction();
+      return;
+    }
+
     let videoPatterns = [];
 
     // 現在の姿に合わせて再生する動画リストを決める
@@ -1018,17 +1027,33 @@ function initRandomVideoActions() {
     const container = document.querySelector('.dragon-container');
     if (!dragonVideo || !dragonImage || !container) return;
 
-    container.classList.add('flash-active');
-    
-    setTimeout(() => {
-      dragonImage.style.opacity = '1';
-      dragonVideo.style.opacity = '0';
-    }, 400);
+    if (dragonVideo.style.opacity === '1') {
+      container.classList.add('flash-active');
+      
+      setTimeout(() => {
+        dragonImage.style.opacity = '1';
+        dragonVideo.style.opacity = '0';
+      }, 400);
 
-    setTimeout(() => {
-      container.classList.remove('flash-active');
+      setTimeout(() => {
+        container.classList.remove('flash-active');
+        scheduleNextAction();
+      }, 800);
+    } else {
       scheduleNextAction();
-    }, 800);
+    }
+  };
+
+  // 強制終了用関数（進化時などに呼ぶ）
+  window.stopDragonVideo = () => {
+    const dragonVideo = document.getElementById('dragonVideo');
+    const dragonImage = document.getElementById('dragonImage');
+    if (dragonVideo && dragonVideo.style.opacity === '1') {
+      dragonVideo.pause();
+      dragonVideo.style.opacity = '0';
+      dragonImage.style.opacity = '1';
+      scheduleNextAction(); // 再設定
+    }
   };
 
   const scheduleNextAction = () => {
