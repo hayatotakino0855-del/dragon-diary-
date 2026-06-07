@@ -298,6 +298,52 @@ async function fetchDiariesFromCalendar() {
 
 let lastSyncedExp = 0;
 
+function calculateStreak() {
+  if (!window.allDiaries || window.allDiaries.length === 0) return 0;
+  
+  const uniqueDates = new Set();
+  window.allDiaries.forEach(d => {
+    if (d.start && d.start.date) {
+      uniqueDates.add(d.start.date);
+    }
+  });
+  
+  const dateObjs = Array.from(uniqueDates).map(ds => {
+    const [y, m, d] = ds.split('-');
+    return new Date(y, m - 1, d);
+  }).sort((a, b) => b - a);
+
+  let streak = 0;
+  if (dateObjs.length > 0) {
+    const todayStr = window.getVirtualTodayStr();
+    const [ty, tm, td] = todayStr.split('-');
+    const virtualToday = new Date(ty, tm - 1, td);
+    virtualToday.setHours(0,0,0,0);
+    
+    const juneFirst = new Date(2026, 5, 1).getTime();
+    const diffDays = Math.floor((virtualToday - dateObjs[0]) / 86400000);
+    
+    if (diffDays <= 1 && dateObjs[0].getTime() >= juneFirst) {
+      streak = 1;
+      let prevDate = dateObjs[0];
+      for (let i = 1; i < dateObjs.length; i++) {
+        if (dateObjs[i].getTime() < juneFirst) break;
+        
+        const diff = Math.floor((prevDate - dateObjs[i]) / 86400000);
+        if (diff === 1) {
+          streak++;
+          prevDate = dateObjs[i];
+        } else if (diff === 0) {
+          continue;
+        } else {
+          break;
+        }
+      }
+    }
+  }
+  return streak;
+}
+
 function syncPlayerStats() {
   const totalDiaries = allDiaries.length;
   const uniqueDates = new Set();
@@ -310,45 +356,12 @@ function syncPlayerStats() {
   
   const totalDays = uniqueDates.size;
   // EXPはローカルで管理するため、カレンダー件数からの算出は行わない
-  // 連続記録（ストリーク）日数の計算
-  let streak = 0;
-  
   const dateObjs = Array.from(uniqueDates).map(ds => {
     const [y, m, d] = ds.split('-');
     return new Date(y, m - 1, d);
   }).sort((a, b) => b - a);
-
-  if (dateObjs.length > 0) {
-    // 基準日（仮想の今日）を取得
-    const todayStr = window.getVirtualTodayStr();
-    const [ty, tm, td] = todayStr.split('-');
-    const virtualToday = new Date(ty, tm - 1, td);
-    virtualToday.setHours(0,0,0,0);
-    
-    // 最新の日記が「基準日」または「基準日の前日」ならストリーク計算開始
-    // ※6月からのスタートとするため、2026年6月1日以降の日記のみをカウントする
-    const juneFirst = new Date(2026, 5, 1).getTime(); // 2026-06-01
-    const diffDays = Math.floor((virtualToday - dateObjs[0]) / 86400000);
-    
-    if (diffDays <= 1 && dateObjs[0].getTime() >= juneFirst) {
-      streak = 1;
-      let prevDate = dateObjs[0];
-      for (let i = 1; i < dateObjs.length; i++) {
-        if (dateObjs[i].getTime() < juneFirst) break; // 6月1日より前は無視
-        
-        const diff = Math.floor((prevDate - dateObjs[i]) / 86400000);
-        if (diff === 1) {
-          streak++;
-          prevDate = dateObjs[i];
-        } else if (diff === 0) {
-          // 同じ日付（1日複数件）はスキップ
-          continue;
-        } else {
-          break; // 連続が途切れた
-        }
-      }
-    }
-  }
+  
+  let streak = calculateStreak();
 
   // 最終活動日
   let lastLoginStr = '-';
@@ -1064,19 +1077,21 @@ function showCalendarDiaries(year, month, day) {
 // 6. 実績システム（段階的獲得）
 // ==========================================
 const ACHIEVEMENTS = [
-  { id: 'first_step', name: 'はじめの一歩', desc: '累計1件', icon: 'assets/ui/badge_first_step.png', condition: (count) => count >= 1 },
-  { id: '3days', name: '三日坊主突破', desc: '累計3件', icon: 'assets/ui/badge_3days.png', condition: (count) => count >= 3 },
-  { id: 'birth', name: '竜の誕生', desc: '累計5件', icon: 'assets/ui/badge_birth.png', condition: (count) => count >= 5 },
-  { id: '1week', name: '一週間の記録', desc: '累計7件', icon: 'assets/ui/badge_1week.png', condition: (count) => count >= 7 },
-  { id: '2weeks', name: '二週間の軌跡', desc: '累計14件', icon: 'assets/ui/badge_2weeks.png', condition: (count) => count >= 14 },
-  { id: '1month', name: '一ヶ月の継続', desc: '累計30件', icon: 'assets/ui/badge_1month.png', condition: (count) => count >= 30 },
-  { id: '50days', name: '半百の記録', desc: '累計50件', icon: 'assets/ui/badge_50days.png', condition: (count) => count >= 50 },
-  { id: '100days', name: '百日草', desc: '累計100件', icon: 'assets/ui/badge_100days.png', condition: (count) => count >= 100 },
+  { id: 'first_step', name: 'はじめの一歩', desc: '累計1件', icon: 'assets/ui/badge_first_step.png', condition: (count, total, level, streak) => count >= 1 },
+  { id: '3days', name: '三日坊主突破', desc: '累計3件', icon: 'assets/ui/badge_3days.png', condition: (count, total, level, streak) => count >= 3 },
+  { id: 'birth', name: '竜の誕生', desc: '累計5件', icon: 'assets/ui/badge_birth.png', condition: (count, total, level, streak) => count >= 5 },
+  { id: '1week', name: '一週間の記録', desc: '累計7件', icon: 'assets/ui/badge_1week.png', condition: (count, total, level, streak) => count >= 7 },
+  { id: '2weeks', name: '二週間の軌跡', desc: '累計14件', icon: 'assets/ui/badge_2weeks.png', condition: (count, total, level, streak) => count >= 14 },
+  { id: '1month', name: '一ヶ月の継続', desc: '累計30件', icon: 'assets/ui/badge_1month.png', condition: (count, total, level, streak) => count >= 30 },
+  { id: '50days', name: '半百の記録', desc: '累計50件', icon: 'assets/ui/badge_50days.png', condition: (count, total, level, streak) => count >= 50 },
+  { id: '100days', name: '百日草', desc: '累計100件', icon: 'assets/ui/badge_100days.png', condition: (count, total, level, streak) => count >= 100 },
   
+  // 連続記録実績
+  { id: 'streak_3', name: '炎の三日間', desc: '連続3日', icon: 'assets/ui/badge_first_step.png', condition: (count, total, level, streak) => streak >= 3 },
+  { id: 'streak_7', name: '一週間の熱狂', desc: '連続7日', icon: 'assets/ui/badge_1week.png', condition: (count, total, level, streak) => streak >= 7 },
+  { id: 'streak_30', name: '三十日の執念', desc: '連続30日', icon: 'assets/ui/badge_1month.png', condition: (count, total, level, streak) => streak >= 30 },
+
   // シークレット実績
-  { id: 'secret_77', name: 'ラッキーセブン', desc: '秘密の条件', icon: 'assets/ui/badge_1week.png', condition: (count, total, level) => count == 77, isSecret: true },
-  { id: 'secret_365', name: '星巡りの旅人', desc: '秘密の条件', icon: 'assets/ui/badge_1month.png', condition: (count, total, level) => count >= 365, isSecret: true },
-  { id: 'secret_700', name: '七百の言霊', desc: '秘密の条件', icon: 'assets/ui/badge_crystal.png', condition: (count, total, level) => total >= 700, isSecret: true },
   { id: 'secret_999', name: '伝説の探求者', desc: '秘密の条件', icon: 'assets/ui/badge_100diary.png', condition: (count, total, level) => total >= 999, isSecret: true },
   { id: 'secret_1000', name: '千年竜の契り（勲章）', desc: '秘密の条件', icon: 'assets/ui/badge_master.png', condition: (count, total, level) => total >= 1000, isSecret: true },
   
@@ -1169,9 +1184,10 @@ function checkAchievements() {
   
   // main.js のグローバル変数 playerLevel を取得（なければ 1）
   const currentLevel = window.playerLevel || 1;
+  const streak = calculateStreak();
 
   ACHIEVEMENTS.forEach(a => {
-    if (a.condition(count, totalCount, currentLevel) && !unlocked.includes(a.id)) {
+    if (a.condition(count, totalCount, currentLevel, streak) && !unlocked.includes(a.id)) {
       unlocked.push(a.id);
       newlyUnlocked.push(a);
       dates[a.id] = Date.now();

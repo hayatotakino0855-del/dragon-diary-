@@ -289,6 +289,7 @@ function gainExp(amount) {
   // レベル1=0, レベル2=100, レベル3=300, レベル4=600 ...というように
   // L = 1/2 + sqrt(1/4 + 2 * exp / 100) を使って計算
   playerLevel = Math.floor((1 + Math.sqrt(1 + 8 * currentExp / 100)) / 2);
+  window.playerLevel = playerLevel;
   
   // 円形ゲージ（サークルゲージ）の進捗を計算して更新
   const currentLevelExp = 100 * playerLevel * (playerLevel - 1) / 2;
@@ -630,6 +631,14 @@ function initDevMode() {
           msg.style.color = 'var(--accent-cyan)';
         }
       } else if (input && input.value.trim() === '実績リセット') {
+        if (!window.allDiaries || window.allDiaries.length === 0) {
+          if (msg) {
+            msg.textContent = 'カレンダーデータ読込前です。数秒待つか日記連携をしてから再度実行してください';
+            msg.style.display = 'block';
+            msg.style.color = '#ef4444';
+          }
+          return;
+        }
         // 現在のEXPと日記数に基づいて実績を完全に再計算・リセットするコマンド
         localStorage.removeItem('unlockedAchievements');
         localStorage.removeItem('achievementDates');
