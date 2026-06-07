@@ -452,13 +452,14 @@ function triggerEvolution(targetStageIndex) {
 
   // 2秒〜16秒: 成長しそうな演出（発光・振動）
   setTimeout(() => {
-    container.classList.add('evolution-charge');
+    const isEgg = targetStageIndex <= 2;
+    container.classList.add(isEgg ? 'evolution-charge-egg' : 'evolution-charge');
   }, 2000);
 
   // 17秒: 強い白い光と共に成長
   setTimeout(() => {
     // 閃光エフェクト
-    container.classList.remove('evolution-charge');
+    container.classList.remove('evolution-charge', 'evolution-charge-egg');
     container.classList.add('flash-active');
     
     // 画像切り替えとステータス更新
@@ -490,6 +491,10 @@ function triggerEvolution(targetStageIndex) {
     setTimeout(() => {
       container.classList.remove('flash-active');
       isEvolving = false;
+      
+      // 進化直後の大量パーティクル（キラキラ）演出
+      spawnEvolutionParticles();
+
       if (typeof checkAchievements === 'function') {
         checkAchievements(); // 進化後の状態での実績チェック
       }
@@ -515,6 +520,47 @@ function triggerEvolution(targetStageIndex) {
     }, 5000);
 
   }, 17000);
+}
+
+// 進化直後に流れる大量のパーティクル演出
+function spawnEvolutionParticles() {
+  const container = document.getElementById('dragonParticles');
+  if (!container) return;
+  
+  for (let i = 0; i < 80; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    
+    // 画面全体から放射状に広がるように
+    const x = Math.random() * 100;
+    const y = Math.random() * 100;
+    
+    const duration = 1 + Math.random() * 2;
+    const delay = Math.random() * 0.5; // 一気に放出
+    const size = 3 + Math.random() * 5;
+    
+    const colors = [
+      'rgba(255, 255, 255, 1)', 
+      'rgba(0, 240, 255, 1)', 
+      'rgba(255, 215, 0, 1)'
+    ];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    
+    particle.style.left = `${x}%`;
+    particle.style.top = `${y}%`;
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+    particle.style.background = color;
+    particle.style.boxShadow = `0 0 ${size * 2}px ${color}`;
+    particle.style.animation = `particleFloat ${duration}s ease-out ${delay}s forwards`;
+    
+    container.appendChild(particle);
+    
+    // アニメーション終了後に削除
+    setTimeout(() => {
+      if (particle.parentNode) particle.remove();
+    }, (duration + delay) * 1000);
+  }
 }
 
 // 実際の稲妻（雷）のSVGを画面に生成する関数
