@@ -1086,7 +1086,23 @@ function saveUnlockedAchievements(unlocked) {
   localStorage.setItem('unlockedAchievements', JSON.stringify(unlocked));
 }
 function getAchievementDates() {
-  return JSON.parse(localStorage.getItem('dragonDiaryAchievementDates') || '{}');
+  const dates = JSON.parse(localStorage.getItem('dragonDiaryAchievementDates') || '{}');
+  let updated = false;
+  
+  // 過去の実績日時の遡及設定
+  if (!dates['first_step']) {
+    dates['first_step'] = new Date(2026, 5, 1).getTime(); // 2026年6月1日
+    updated = true;
+  }
+  if (!dates['3days']) {
+    dates['3days'] = new Date(2026, 5, 3).getTime(); // 2026年6月3日
+    updated = true;
+  }
+  
+  if (updated) {
+    saveAchievementDates(dates);
+  }
+  return dates;
 }
 function saveAchievementDates(dates) {
   localStorage.setItem('dragonDiaryAchievementDates', JSON.stringify(dates));
