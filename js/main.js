@@ -141,17 +141,11 @@ window.showAchievementToast = function(title, icon) {
   `;
   document.body.appendChild(toast);
 
-  // 効果音(YouTube動画)の再生用隠しiframeを動的に生成
-  const sePlayer = document.createElement('iframe');
-  sePlayer.width = '1';
-  sePlayer.height = '1';
-  sePlayer.style.position = 'absolute';
-  sePlayer.style.top = '-9999px';
-  sePlayer.style.opacity = '0';
-  sePlayer.style.pointerEvents = 'none';
-  sePlayer.allow = 'autoplay';
-  sePlayer.src = 'https://www.youtube.com/embed/2BsBAQnFIVg?autoplay=1&controls=0&showinfo=0&autohide=1';
-  document.body.appendChild(sePlayer);
+  // 効果音(YouTube動画)の再生
+  if (window.seYoutubePlayer && typeof window.seYoutubePlayer.seekTo === 'function') {
+    window.seYoutubePlayer.seekTo(0);
+    window.seYoutubePlayer.playVideo();
+  }
 
   // 表示アニメーション
   setTimeout(() => {
@@ -188,7 +182,7 @@ if (!localStorage.getItem('achieveResetV14')) {
 let maxUnlockedStage = 0; // 最初は第1段階(卵)のみ解放
 let currentStageIndex = 0; // 現在表示中のステージ
 let isEvolving = false; // 進化アニメーション中かどうかのフラグ
-const STAGE_THRESHOLDS = [0, 300, 1000, 3000, 8000, 20000, 50000];
+const STAGE_THRESHOLDS = [0, 1050, 4350, 9900, 17700, 31600, 49500];
 
 // --- 称号システム（レベル連動） ---
 const PLAYER_TITLES = [
@@ -294,12 +288,12 @@ function gainExp(amount) {
   localStorage.setItem('dragonDiaryExp', currentExp); // 経験値をローカル保存
   // レベル1=0, レベル2=100, レベル3=300, レベル4=600 ...というように
   // L = 1/2 + sqrt(1/4 + 2 * exp / 100) を使って計算
-  playerLevel = Math.floor((1 + Math.sqrt(1 + 8 * currentExp / 100)) / 2);
+  playerLevel = Math.floor((1 + Math.sqrt(1 + 8 * currentExp / 10)) / 2);
   window.playerLevel = playerLevel;
   
   // 円形ゲージ（サークルゲージ）の進捗を計算して更新
-  const currentLevelExp = 100 * playerLevel * (playerLevel - 1) / 2;
-  const nextLevelExp = 100 * (playerLevel + 1) * playerLevel / 2;
+  const currentLevelExp = 10 * playerLevel * (playerLevel - 1) / 2;
+  const nextLevelExp = 10 * (playerLevel + 1) * playerLevel / 2;
   const levelProgressPercent = ((currentExp - currentLevelExp) / (nextLevelExp - currentLevelExp)) * 100;
   
   const circleGauge = document.querySelector('.circle-gauge');
@@ -395,7 +389,7 @@ function gainExp(amount) {
     if (maxLabel) maxLabel.textContent = nextThreshold;
     if (midLabel) {
       if (nextThreshold > currentThreshold) {
-        midLabel.textContent = Math.floor((currentThreshold + nextThreshold) / 2);
+        midLabel.textContent = Math.round(currentExp);
       } else {
         midLabel.textContent = "MAX";
       }
@@ -1803,9 +1797,24 @@ function showInAppNotification(title, body) {
 let ytPlayer;
 let ytReady = false;
 
+window.seYoutubePlayer = null;
+
 window.onYouTubeIframeAPIReady = function() {
   ytReady = true;
   initBgm();
+  
+  // 実績解除用SEプレイヤーの初期化
+  window.seYoutubePlayer = new YT.Player('achievementSePlayer', {
+    height: '1',
+    width: '1',
+    videoId: '2BsBAQnFIVg', // 指定されたSE動画
+    playerVars: {
+      'autoplay': 0,
+      'controls': 0,
+      'showinfo': 0,
+      'rel': 0
+    }
+  });
 };
 
 function initBgm() {

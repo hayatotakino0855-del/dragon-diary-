@@ -1078,57 +1078,59 @@ function showCalendarDiaries(year, month, day) {
 // 6. 実績システム（段階的獲得）
 // ==========================================
 const ACHIEVEMENTS = [
-  { id: 'first_step', name: 'はじめの一歩', desc: '累計1件', icon: 'assets/ui/badge_first_step.png', condition: (count, total, level, streak) => total >= 1 },
-  { id: '3days', name: '三日坊主突破', desc: '累計3件', icon: 'assets/ui/badge_3days.png', condition: (count, total, level, streak) => total >= 3 },
-  { id: 'birth', name: '竜の誕生', desc: '累計5件', icon: 'assets/ui/badge_birth.png', condition: (count, total, level, streak) => total >= 5 },
-  { id: '1week', name: '一週間の記録', desc: '累計7件', icon: 'assets/ui/badge_1week.png', condition: (count, total, level, streak) => total >= 7 },
-  { id: '2weeks', name: '二週間の軌跡', desc: '累計14件', icon: 'assets/ui/badge_2weeks.png', condition: (count, total, level, streak) => total >= 14 },
-  { id: '1month', name: '一ヶ月の継続', desc: '累計30件', icon: 'assets/ui/badge_1month.png', condition: (count, total, level, streak) => total >= 30 },
-  { id: '50days', name: '半百の記録', desc: '累計50件', icon: 'assets/ui/badge_50days.png', condition: (count, total, level, streak) => total >= 50 },
-  { id: '100days', name: '百日草', desc: '累計100件', icon: 'assets/ui/badge_100days.png', condition: (count, total, level, streak) => total >= 100 },
+  // 日記の記録実績
+  { id: 'diary_1', name: '最初の日記', desc: '累計1件', icon: 'assets/ui/badge_diary_1.png', condition: (count, total, level, streak) => total >= 1 },
+  { id: 'diary_10', name: '日記10件達成', desc: '累計10件', icon: 'assets/ui/badge_diary_10.png', condition: (count, total, level, streak) => total >= 10 },
+  { id: 'diary_30', name: '日記30件達成', desc: '累計30件', icon: 'assets/ui/badge_diary_30.png', condition: (count, total, level, streak) => total >= 30 },
+  { id: 'diary_50', name: '日記50件達成', desc: '累計50件', icon: 'assets/ui/badge_diary_50.png', condition: (count, total, level, streak) => total >= 50 },
+  { id: 'diary_100', name: '日記100件達成', desc: '累計100件', icon: 'assets/ui/badge_diary_100.png', condition: (count, total, level, streak) => total >= 100 },
+  { id: 'diary_365', name: '365日の記録', desc: '累計365件', icon: 'assets/ui/badge_diary_365.png', condition: (count, total, level, streak) => total >= 365 },
   
   // 連続記録実績
-  { id: 'streak_3', name: '炎の三日間', desc: '連続3日', icon: 'assets/ui/badge_streak_3.png', condition: (count, total, level, streak) => streak >= 3 },
-  { id: 'streak_7', name: '一週間の熱狂', desc: '連続7日', icon: 'assets/ui/badge_streak_7.png', condition: (count, total, level, streak) => streak >= 7 },
-  { id: 'streak_30', name: '三十日の執念', desc: '連続30日', icon: 'assets/ui/badge_streak_30.png', condition: (count, total, level, streak) => streak >= 30 },
+  { id: 'streak_3', name: '3日連続記録', desc: '連続3日', icon: 'assets/ui/badge_streak_3.png', condition: (count, total, level, streak) => streak >= 3 },
+  { id: 'streak_7', name: '7日連続記録', desc: '連続7日', icon: 'assets/ui/badge_streak_7.png', condition: (count, total, level, streak) => streak >= 7 },
+  { id: 'streak_30', name: '30日連続記録', desc: '連続30日', icon: 'assets/ui/badge_streak_30.png', condition: (count, total, level, streak) => streak >= 30 },
+  { id: 'streak_100', name: '100日連続記録', desc: '連続100日', icon: 'assets/ui/badge_streak_100.png', condition: (count, total, level, streak) => streak >= 100 },
 
-  // プレイヤーレベル実績（経験値獲得ポイントに応じた実績）
-  { id: 'lv2', name: '竜の目覚め', desc: 'プレイヤーLv2到達', icon: 'assets/ui/badge_lv2.png', condition: (count, total, level, streak, exp) => level >= 2 },
-  { id: 'lv3', name: '竜騎士の道', desc: 'プレイヤーLv3到達', icon: 'assets/ui/badge_lv3.png', condition: (count, total, level, streak, exp) => level >= 3 },
-  { id: 'lv4', name: '絆の深まり', desc: 'プレイヤーLv4到達', icon: 'assets/ui/badge_lv4.png', condition: (count, total, level, streak, exp) => level >= 4 },
-  { id: 'lv5', name: '共鳴する心', desc: 'プレイヤーLv5到達', icon: 'assets/ui/badge_lv5.png', condition: (count, total, level, streak, exp) => level >= 5 },
-  { id: 'lv7', name: '大空への憧れ', desc: 'プレイヤーLv7到達', icon: 'assets/ui/badge_lv7.png', condition: (count, total, level, streak, exp) => level >= 7 },
+  // ドラゴンの成長実績
+  { id: 'stage_2', name: '第2段階：覚醒の卵', desc: 'Lv15到達', icon: 'assets/ui/badge_stage_2.png', condition: (count, total, level, streak, exp) => level >= 15 },
+  { id: 'stage_3', name: '第3段階：幼竜', desc: 'Lv30到達', icon: 'assets/ui/badge_stage_3.png', condition: (count, total, level, streak, exp) => level >= 30 },
+  { id: 'stage_4', name: '第4段階：少年竜', desc: 'Lv45到達', icon: 'assets/ui/badge_stage_4.png', condition: (count, total, level, streak, exp) => level >= 45 },
+  { id: 'stage_5', name: '第5段階：青年竜', desc: 'Lv60到達', icon: 'assets/ui/badge_stage_5.png', condition: (count, total, level, streak, exp) => level >= 60 },
+  { id: 'stage_6', name: '第6段階：古竜', desc: 'Lv80到達', icon: 'assets/ui/badge_stage_6.png', condition: (count, total, level, streak, exp) => level >= 80 },
+  { id: 'stage_7', name: '第7段階：伝説の竜', desc: 'Lv100到達', icon: 'assets/ui/badge_stage_7.png', condition: (count, total, level, streak, exp) => level >= 100 },
 
-  // シークレット実績
-  { id: 'secret_999', name: '伝説の探求者', desc: '秘密の条件', icon: 'assets/ui/badge_100diary.png', condition: (count, total, level, streak, exp) => total >= 999, isSecret: true },
-  { id: 'secret_1000', name: '千年竜の契り（勲章）', desc: '秘密の条件', icon: 'assets/ui/badge_master.png', condition: (count, total, level, streak, exp) => total >= 1000, isSecret: true },
-  
-  // プレイヤーレベルのシークレット実績
-  { id: 'secret_lv10', name: '見習い竜使い', desc: '秘密の条件', icon: 'assets/ui/badge_lv10.png', condition: (count, total, level, streak, exp) => level >= 10, isSecret: true },
-  { id: 'secret_lv30', name: '熟練の竜使い', desc: '秘密の条件', icon: 'assets/ui/badge_claw.png', condition: (count, total, level, streak, exp) => level >= 30, isSecret: true },
-  { id: 'secret_lv50', name: '竜の導き手', desc: '秘密の条件', icon: 'assets/ui/badge_eye.png', condition: (count, total, level, streak, exp) => level >= 50, isSecret: true },
-  { id: 'secret_lv100', name: 'マスタードラゴン（勲章）', desc: '秘密の条件', icon: 'assets/ui/badge_master.png', condition: (count, total, level, streak, exp) => level >= 100, isSecret: true },
+  // プレイヤーレベル実績
+  { id: 'level_20', name: 'Lv20到達', desc: 'プレイヤーLv20', icon: 'assets/ui/badge_level_20.png', condition: (count, total, level, streak, exp) => level >= 20 },
+  { id: 'level_40', name: 'Lv40到達', desc: 'プレイヤーLv40', icon: 'assets/ui/badge_level_40.png', condition: (count, total, level, streak, exp) => level >= 40 },
+  { id: 'level_60', name: 'Lv60到達', desc: 'プレイヤーLv60', icon: 'assets/ui/badge_level_60.png', condition: (count, total, level, streak, exp) => level >= 60 },
+  { id: 'level_80', name: 'Lv80到達', desc: 'プレイヤーLv80', icon: 'assets/ui/badge_level_80.png', condition: (count, total, level, streak, exp) => level >= 80 },
+  { id: 'level_100', name: 'Lv100到達', desc: 'プレイヤーLv100', icon: 'assets/ui/badge_level_100.png', condition: (count, total, level, streak, exp) => level >= 100 }
 ];
 
 function getUnlockedAchievements() {
-  return JSON.parse(localStorage.getItem('unlockedAchievements') || '[]');
+  let unlocked = JSON.parse(localStorage.getItem('unlockedAchievements') || '[]');
+  const validIds = ACHIEVEMENTS.map(a => a.id);
+  const filtered = unlocked.filter(id => validIds.includes(id));
+  if (filtered.length !== unlocked.length) {
+    localStorage.setItem('unlockedAchievements', JSON.stringify(filtered));
+  }
+  return filtered;
 }
 function saveUnlockedAchievements(unlocked) {
   localStorage.setItem('unlockedAchievements', JSON.stringify(unlocked));
 }
 function getAchievementDates() {
   const dates = JSON.parse(localStorage.getItem('dragonDiaryAchievementDates') || '{}');
+  // Initialize current format if missing
   let updated = false;
-  
-  // 過去の実績日時の遡及設定
-  if (!dates['first_step']) {
-    dates['first_step'] = new Date(2026, 5, 1).getTime(); // 2026年6月1日
-    updated = true;
-  }
-  if (!dates['3days']) {
-    dates['3days'] = new Date(2026, 5, 3).getTime(); // 2026年6月3日
-    updated = true;
-  }
+  let unlocked = getUnlockedAchievements();
+  unlocked.forEach(id => {
+    if (!dates[id]) {
+      dates[id] = Date.now();
+      updated = true;
+    }
+  });
   
   if (updated) {
     saveAchievementDates(dates);
@@ -1209,12 +1211,17 @@ function checkAchievements() {
     renderAchievements();
 
     // 新規解放された実績を通知する
+    let delayBase = 0;
+    if (window.isEvolving) {
+      delayBase = 18000; // 進化アニメーション中なら18秒遅延させる
+    }
+
     newlyUnlocked.forEach((a, index) => {
       setTimeout(() => {
         if (typeof window.showAchievementToast === 'function') {
           window.showAchievementToast(a.name, a.icon);
         }
-      }, index * 4500); // 複数ある場合はずらして表示
+      }, delayBase + index * 4500); // 複数ある場合はずらして表示
     });
   }
   
