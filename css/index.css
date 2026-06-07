@@ -155,7 +155,7 @@ body {
 
 /* --- 新しい進化演出（YouTube同期用） --- */
 .evolution-charge {
-  animation: evolution-charge-anim 15s ease-in forwards;
+  animation: evolution-charge-anim 15s ease-in forwards !important;
 }
 
 @keyframes evolution-charge-anim {
@@ -185,12 +185,13 @@ body {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
+  z-index: 20;
 }
 
 /* 卵用の進化アニメーション（下部を軸に横揺れ） */
 .evolution-charge-egg {
-  transform-origin: bottom center;
-  animation: evolution-charge-egg-anim 15s ease-in-out forwards;
+  transform-origin: bottom center !important;
+  animation: evolution-charge-egg-anim 15s ease-in-out forwards !important;
 }
 
 @keyframes evolution-charge-egg-anim {

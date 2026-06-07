@@ -463,7 +463,9 @@ function triggerEvolution(targetStageIndex) {
   setTimeout(() => {
     const isEgg = currentStageIndex <= 1;
     if (isEgg) {
-      document.getElementById('dragonImage').classList.add('evolution-charge-egg');
+      const img = document.getElementById('dragonImage');
+      img.style.animation = 'none'; // インラインの呼吸アニメーションをクリア
+      img.classList.add('evolution-charge-egg');
     } else {
       container.classList.add('evolution-charge');
       // 第3段階以降は点滅とキラキラ流れる演出を開始
