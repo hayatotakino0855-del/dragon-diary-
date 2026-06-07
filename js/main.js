@@ -337,6 +337,7 @@ function gainExp(amount) {
       };
 
       img.src = stage.image;
+      updateDragonNest(currentStageIndex);
       
       // srcをセットした後にキャッシュ判定を行う
       if (img.complete) {
@@ -454,13 +455,19 @@ function triggerEvolution(targetStageIndex) {
   // 2秒〜16秒: 成長しそうな演出（発光・振動）
   setTimeout(() => {
     const isEgg = targetStageIndex <= 2;
-    container.classList.add(isEgg ? 'evolution-charge-egg' : 'evolution-charge');
+    if (isEgg) {
+      document.getElementById('dragonImage').classList.add('evolution-charge-egg');
+    } else {
+      container.classList.add('evolution-charge');
+    }
   }, 2000);
 
   // 17秒: 強い白い光と共に成長
   setTimeout(() => {
     // 閃光エフェクト
-    container.classList.remove('evolution-charge', 'evolution-charge-egg');
+    container.classList.remove('evolution-charge');
+    const imgElement = document.getElementById('dragonImage');
+    if (imgElement) imgElement.classList.remove('evolution-charge-egg');
     container.classList.add('flash-active');
     
     // 画像切り替えとステータス更新
@@ -472,6 +479,7 @@ function triggerEvolution(targetStageIndex) {
 
     if (imgElement && stage) {
       imgElement.src = stage.image;
+      updateDragonNest(currentStageIndex);
       imgElement.style.animation = `${stage.animation} 4s ease-in-out infinite`;
       if (nameEl) nameEl.textContent = stage.name;
       if (stageEl) stageEl.textContent = stage.stage;
@@ -1111,13 +1119,24 @@ function initStatBarAnimation() {
 // --- ドラゴンの段階を切り替える（デモ用） ---
 const DRAGON_STAGES = [
   { image: 'assets/dragons/stage1_egg.png',       name: '神秘の卵',   stage: '第1段階', animation: 'none' },
-  { image: 'assets/dragons/stage2_egg.png',        name: '覚醒の卵',   stage: '第2段階', animation: 'none' },
+  { image: 'assets/dragons/stage2_egg_only.png',        name: '覚醒の卵',   stage: '第2段階', animation: 'none' },
   { image: 'assets/dragons/stage3_hatchling.png',  name: '幼竜',      stage: '第3段階', animation: 'dragonBreathing' },
   { image: 'assets/dragons/stage4_young.png',      name: '少年竜',    stage: '第4段階', animation: 'dragonBreathing' },
   { image: 'assets/dragons/stage5_juvenile.png',   name: '青年竜',    stage: '第5段階', animation: 'dragonFloat' },
   { image: 'assets/dragons/stage6_mature.png',     name: '古竜',      stage: '第6段階', animation: 'dragonFloat' },
   { image: 'assets/dragons/stage7_legendary.png',  name: '伝説の竜',  stage: '第7段階', animation: 'dragonFloat' },
 ];
+
+function updateDragonNest(stageIndex) {
+  const nest = document.getElementById('dragonNest');
+  if (!nest) return;
+  if (stageIndex === 1) { // 覚醒の卵の時だけ巣を表示
+    nest.src = 'assets/dragons/stage2_nest.png';
+    nest.style.display = 'block';
+  } else {
+    nest.style.display = 'none';
+  }
+}
 
 // 卵専用アニメーション
 const eggStyles = document.createElement('style');
@@ -1135,18 +1154,22 @@ eggStyles.textContent = `
 
   @keyframes eggWobble {
     0%, 80%, 100% {
+      transform-origin: bottom center;
       transform: rotate(0deg) scale(1);
       filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.3));
     }
     85% {
+      transform-origin: bottom center;
       transform: rotate(-3deg) scale(1.02);
       filter: drop-shadow(0 0 25px rgba(74, 125, 255, 0.6));
     }
     90% {
+      transform-origin: bottom center;
       transform: rotate(3deg) scale(1.02);
       filter: drop-shadow(0 0 25px rgba(74, 125, 255, 0.6));
     }
     95% {
+      transform-origin: bottom center;
       transform: rotate(-1.5deg) scale(1.01);
       filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.5));
     }
@@ -1177,6 +1200,7 @@ document.getElementById('dragonContainer')?.addEventListener('click', (e) => {
 
     setTimeout(() => {
       img.src = stage.image;
+      updateDragonNest(currentStageIndex);
       img.style.animation = `${stage.animation} 4s ease-in-out infinite`;
       nameEl.textContent = stage.name;
       stageEl.textContent = stage.stage;
