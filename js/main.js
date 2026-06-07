@@ -141,10 +141,12 @@ window.showAchievementToast = function(title, icon) {
   `;
   document.body.appendChild(toast);
 
-  // 効果音(YouTube動画)の再生
-  if (window.seYoutubePlayer && typeof window.seYoutubePlayer.seekTo === 'function') {
-    window.seYoutubePlayer.seekTo(0);
-    window.seYoutubePlayer.playVideo();
+  // 効果音の再生 (ネイティブAudioによる再生でBGMを停止させない)
+  const seAudio = document.getElementById('achievementSeAudio');
+  if (seAudio) {
+    seAudio.currentTime = 0;
+    seAudio.volume = 0.7; // 適切な音量
+    seAudio.play().catch(e => console.log('SE autoplay blocked by browser policy:', e));
   }
 
   // 表示アニメーション
@@ -508,15 +510,14 @@ function triggerEvolution(targetStageIndex) {
       // 進化直後の大量パーティクル（キラキラ）演出
       spawnEvolutionParticles();
 
-      if (typeof checkAchievements === 'function') {
-        checkAchievements(); // 進化後の状態での実績チェック
-      }
-    }, 1000);
-    
-    // 約22秒 (動画が終わる頃) に必要なら元のBGMを再開
+    // 約22秒 (動画が終わる頃) に必要なら元のBGMを再開し、実績チェックを行う
     setTimeout(() => {
       const tempIframe = document.getElementById('tempEvoIframe');
       if (tempIframe) tempIframe.remove();
+      
+      if (typeof checkAchievements === 'function') {
+        checkAchievements(); // 進化後の状態での実績チェックを、進化BGM終了後に実行
+      }
       
       const bgmToggle = document.getElementById('bgmToggle');
       if (typeof ytPlayer !== 'undefined' && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
@@ -1803,35 +1804,6 @@ window.seYoutubePlayer = null;
 window.onYouTubeIframeAPIReady = function() {
   ytReady = true;
   initBgm();
-  
-  // 実績解除用SEプレイヤーの初期化
-  window.seYoutubePlayer = new YT.Player('achievementSePlayer', {
-    height: '1',
-    width: '1',
-    videoId: '2BsBAQnFIVg', // 指定されたSE動画
-    playerVars: {
-      'autoplay': 0,
-      'controls': 0,
-      'showinfo': 0,
-      'rel': 0
-    }
-  });
-  
-  // ユーザー操作時に音声をアンロックする
-  const unlockAudio = () => {
-    if (window.seYoutubePlayer && typeof window.seYoutubePlayer.playVideo === 'function') {
-      // 一瞬再生してすぐ止めることでオーディオコンテキストをアンロック
-      window.seYoutubePlayer.playVideo();
-      setTimeout(() => {
-        window.seYoutubePlayer.pauseVideo();
-        window.seYoutubePlayer.seekTo(0);
-      }, 50);
-      document.removeEventListener('click', unlockAudio);
-      document.removeEventListener('touchstart', unlockAudio);
-    }
-  };
-  document.addEventListener('click', unlockAudio);
-  document.addEventListener('touchstart', unlockAudio);
 };
 
 function initBgm() {

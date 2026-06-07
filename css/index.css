@@ -169,9 +169,9 @@ body {
   100% { filter: brightness(15) drop-shadow(0 0 200px white); opacity: 1; transform: translateX(0) scale(1.15); }
 }
 
-/* 卵用の進化アニメーション（下部を軸にピクピクとした卵の孵化動作、拡大なし） */
+/* 卵用の進化アニメーション（下部を軸に横揺れ） */
 .evolution-charge-egg {
-  transform-origin: 50% 73%;
+  transform-origin: bottom center;
   animation: evolution-charge-egg-anim 15s ease-in-out forwards;
 }
 
