@@ -1550,10 +1550,17 @@ function initPowerGraphCanvas() {
 
       if (progress > 0) {
         ctx.globalCompositeOperation = 'source-over';
+        
+        // 縦線が上部で自然に消えるようにグラデーションを作成
+        const grad = ctx.createLinearGradient(0, canvas.height * 0.15, 0, canvas.height);
+        grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        grad.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+        grad.addColorStop(1, 'rgba(255, 255, 255, 0.8)');
+
         ctx.beginPath();
         ctx.moveTo(dynActiveWidth, canvas.height);
-        ctx.lineTo(dynActiveWidth, canvas.height * 0.25);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineTo(dynActiveWidth, 0);
+        ctx.strokeStyle = grad;
         ctx.lineWidth = 1.5;
         ctx.shadowBlur = 10;
         ctx.shadowColor = '#00f0ff';
