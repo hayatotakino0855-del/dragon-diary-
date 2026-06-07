@@ -473,7 +473,6 @@ function triggerEvolution(targetStageIndex) {
     // 画像切り替えとステータス更新
     currentStageIndex = targetStageIndex;
     const stage = DRAGON_STAGES[currentStageIndex];
-    const imgElement = document.getElementById('dragonImage');
     const nameEl = document.querySelector('.dragon-name');
     const stageEl = document.querySelector('.dragon-stage');
 
