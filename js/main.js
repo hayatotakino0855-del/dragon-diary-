@@ -1170,6 +1170,14 @@ function updateDragonNest(stageIndex) {
     img.style.height = smallStyle;
     img.style.top = offsetStyle;
     img.style.left = offsetStyle;
+  } else if (stageIndex === 2) { // 第三段階（ひびの卵）も第一段階と同じサイズにする（藁はなし）
+    nest.style.display = 'none';
+    const smallStyle = '60%';
+    const offsetStyle = '20%';
+    img.style.width = smallStyle;
+    img.style.height = smallStyle;
+    img.style.top = offsetStyle;
+    img.style.left = offsetStyle;
   } else {
     nest.style.display = 'none';
     
