@@ -1196,7 +1196,7 @@ function checkAchievements() {
   const streak = calculateStreak();
 
   ACHIEVEMENTS.forEach(a => {
-    if (a.condition(count, totalCount, currentLevel, streak, currentExp) && !unlocked.includes(a.id)) {
+    if (a.condition(count, count, currentLevel, streak, currentExp) && !unlocked.includes(a.id)) {
       unlocked.push(a.id);
       newlyUnlocked.push(a);
       dates[a.id] = Date.now();

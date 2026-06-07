@@ -115,8 +115,14 @@ function initTodayDate() {
 // --- 成長システム（状態管理） ---
 let playerLevel = 1;
 // --- 実績解除通知 ---
+window.notifiedAchievements = window.notifiedAchievements || new Set();
 window.showAchievementToast = function(title, icon) {
+  if (window.notifiedAchievements.has(title)) return;
+  window.notifiedAchievements.add(title);
+
   const toast = document.createElement('div');
+  toast.className = 'achievement-toast';
+  toast.dataset.title = title;
   toast.style.position = 'fixed';
   toast.style.top = '-100px';
   toast.style.left = '50%';
