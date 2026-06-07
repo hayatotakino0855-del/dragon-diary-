@@ -419,18 +419,31 @@ function triggerEvolution(targetStageIndex) {
   isEvolving = true; // 進化ロック
   
   // 0秒: BGMの再生準備
-  if (typeof ytPlayer !== 'undefined' && ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
-    ytPlayer.pauseVideo(); // 既存のBGMを一時停止
-  }
+  const bgmEnabled = localStorage.getItem('bgmEnabled') === 'true';
+  const originalUrl = localStorage.getItem('bgmYoutubeUrl') || '';
+  let originalVolume = 2;
   
-  const evoPlayer = document.createElement('iframe');
-  evoPlayer.width = '1';
-  evoPlayer.height = '1';
-  evoPlayer.style.position = 'absolute';
-  evoPlayer.style.top = '-9999px';
-  evoPlayer.allow = 'autoplay';
-  evoPlayer.src = 'https://www.youtube.com/embed/6jlUSGULrW0?autoplay=1&controls=0&showinfo=0&autohide=1';
-  document.body.appendChild(evoPlayer);
+  if (typeof ytPlayer !== 'undefined' && ytPlayer) {
+    if (typeof ytPlayer.getVolume === 'function') {
+      originalVolume = ytPlayer.getVolume() || 2;
+    }
+    if (typeof ytPlayer.loadVideoById === 'function') {
+      ytPlayer.loadVideoById({ videoId: '6jlUSGULrW0', startSeconds: 1 });
+      if (typeof ytPlayer.setVolume === 'function') {
+        ytPlayer.setVolume(100); // 演出音なので大きめに
+      }
+    }
+  } else {
+    const evoPlayer = document.createElement('iframe');
+    evoPlayer.id = 'tempEvoIframe';
+    evoPlayer.width = '1';
+    evoPlayer.height = '1';
+    evoPlayer.style.position = 'absolute';
+    evoPlayer.style.top = '-9999px';
+    evoPlayer.allow = 'autoplay';
+    evoPlayer.src = 'https://www.youtube.com/embed/6jlUSGULrW0?autoplay=1&controls=0&showinfo=0&autohide=1&start=1';
+    document.body.appendChild(evoPlayer);
+  }
 
   // 1.0秒〜1.5秒: ピロピロ音に合わせて画面トップへ強制移動
   setTimeout(() => {
@@ -482,12 +495,22 @@ function triggerEvolution(targetStageIndex) {
       }
     }, 1000);
     
-    // 約20秒 (動画が終わる頃) にBGM用iframeを削除し、必要なら元のBGMを再開
+    // 約20秒 (動画が終わる頃) に必要なら元のBGMを再開
     setTimeout(() => {
-      if (evoPlayer.parentNode) evoPlayer.remove();
+      const tempIframe = document.getElementById('tempEvoIframe');
+      if (tempIframe) tempIframe.remove();
+      
       const bgmToggle = document.getElementById('bgmToggle');
-      if (bgmToggle && bgmToggle.checked && typeof ytPlayer !== 'undefined' && ytPlayer && typeof ytPlayer.playVideo === 'function') {
-        ytPlayer.playVideo();
+      if (typeof ytPlayer !== 'undefined' && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+        const originalVideoId = typeof extractYoutubeId === 'function' ? extractYoutubeId(originalUrl) : null;
+        if (bgmToggle && bgmToggle.checked && originalVideoId) {
+          ytPlayer.loadVideoById({ videoId: originalVideoId });
+          if (typeof ytPlayer.setVolume === 'function') {
+            ytPlayer.setVolume(originalVolume);
+          }
+        } else {
+          ytPlayer.pauseVideo();
+        }
       }
     }, 5000);
 
