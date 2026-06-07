@@ -284,7 +284,6 @@
           <div class="setting-item" style="color: #ef4444;" id="logoutButton">
             ログアウト
           </div>
-
           <div class="setting-item" id="googleAuthContainer" style="margin-top: 15px; border-top: 1px solid var(--border-subtle); padding-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
             <span style="font-size: 0.85rem;">Googleアカウント連携</span>
             <button id="googleAuthButton" class="cyber-button" style="width: 100%;">Googleでログイン</button>
@@ -304,17 +303,15 @@
           </div>
         </div>
 
-        <!-- 開発者コマンドセクション -->
-        <h2 class="section-title" style="margin-top: 20px;"><span class="title-accent"></span> 開発コマンド</h2>
+        <!-- コマンドセクション -->
+        <h2 class="section-title" style="margin-top: 20px;"><span class="title-accent"></span> コマンド</h2>
         <div class="dummy-card">
-          <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 10px; padding: 10px 0;">
-            <div style="display: flex; gap: 8px; width: 100%;">
-              <input type="text" id="devCommandInput" class="cyber-input" style="flex: 1; font-size: 0.8rem; padding: 8px;" placeholder="コマンドを入力">
-              <button id="devCommandClearBtn" class="cyber-button" style="padding: 8px 12px; font-size: 0.8rem; background: var(--surface-light); border-color: var(--text-muted); color: var(--text-muted); flex-shrink: 0; min-width: 60px;">クリア</button>
-            </div>
-            <button id="devCommandApplyBtn" class="cyber-button" style="padding: 10px; font-size: 0.9rem; width: 100%;">更新</button>
-            <span id="devCommandMessage" style="font-size: 0.75rem; color: var(--accent-cyan); display: none;"></span>
+          <div style="display: flex; gap: 8px; width: 100%; align-items: center;">
+            <input type="text" id="devCommandInput" class="cyber-input" style="flex: 1; font-size: 0.85rem; padding: 10px;" placeholder="コマンドを入力...">
+            <button id="devCommandClearBtn" class="cyber-button" style="padding: 8px 12px; font-size: 0.8rem; background: transparent; border-color: var(--text-muted); color: var(--text-muted); white-space: nowrap;">クリア</button>
           </div>
+          <button id="devCommandApplyBtn" class="cyber-button" style="width: 100%; margin-top: 10px; padding: 10px; font-size: 0.85rem;">更新</button>
+          <span id="devCommandMessage" style="font-size: 0.75rem; color: var(--accent-cyan); display: none; margin-top: 8px;"></span>
         </div>
       </div>
 

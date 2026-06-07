@@ -56,8 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initDragonComments();
   initNotifications();
   initPowerGraphCanvas();
-  initThemeToggle();
-  initSettingsMenu();
   initDevMode();
   initStatusCards();
   initRadarChart();
