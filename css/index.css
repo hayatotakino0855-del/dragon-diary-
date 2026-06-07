@@ -144,13 +144,23 @@ body {
 }
 
 @keyframes evolveFlash {
+  0% { filter: brightness(1) drop-shadow(0 0 0px rgba(255, 255, 255, 0)); }
+  50% { filter: brightness(3) drop-shadow(0 0 50px rgba(255, 255, 255, 1)); }
+  100% { filter: brightness(1) drop-shadow(0 0 0px rgba(255, 255, 255, 0)); }
+}
+
+.flash-active {
+  animation: evolveFlash 0.8s ease-in-out;
+}
+
+@keyframes evolutionBigFlash {
   0% { filter: brightness(15) drop-shadow(0 0 200px white); transform: scale(1.15); }
   20% { filter: brightness(15) drop-shadow(0 0 200px white); transform: scale(1.15); }
   100% { filter: brightness(1) drop-shadow(0 0 0px rgba(255, 255, 255, 0)); transform: scale(1); }
 }
 
-.flash-active {
-  animation: evolveFlash 2.5s ease-out forwards !important;
+.evolution-flash-active {
+  animation: evolutionBigFlash 2.5s ease-out forwards !important;
 }
 
 /* --- 新しい進化演出（YouTube同期用） --- */
@@ -636,6 +646,8 @@ body {
   position: relative;
   border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 5px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 100%);
 }
 
 .static-flame-img {

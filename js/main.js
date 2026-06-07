@@ -491,7 +491,7 @@ function triggerEvolution(targetStageIndex) {
     container.classList.remove('evolution-charge');
     const imgElement = document.getElementById('dragonImage');
     if (imgElement) imgElement.classList.remove('evolution-charge-egg');
-    container.classList.add('flash-active');
+    container.classList.add('evolution-flash-active');
     
     // 画像切り替えとステータス更新
     currentStageIndex = targetStageIndex;
@@ -520,7 +520,7 @@ function triggerEvolution(targetStageIndex) {
 
     // 18秒: フラッシュ解除し、進化終了
     setTimeout(() => {
-      container.classList.remove('flash-active');
+      container.classList.remove('evolution-flash-active');
       isEvolving = false;
       
       // 進化直後の大量パーティクル（キラキラ）演出
