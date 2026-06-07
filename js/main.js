@@ -1973,6 +1973,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
+  // ユーザーの初回クリック時にAudio要素をアンロックする
+  const unlockAudio = () => {
+    const seAudio = document.getElementById('achievementSeAudio');
+    if (seAudio) {
+      seAudio.volume = 0;
+      seAudio.play().then(() => {
+        seAudio.pause();
+        seAudio.currentTime = 0;
+        document.removeEventListener('click', unlockAudio);
+        document.removeEventListener('touchstart', unlockAudio);
+      }).catch(e => console.log('Audio unlock failed:', e));
+    }
+  };
+  document.addEventListener('click', unlockAudio, { once: true });
+  document.addEventListener('touchstart', unlockAudio, { once: true });
+
   document.body.addEventListener('click', () => {
     const isEnabled = localStorage.getItem('bgmEnabled') === 'true';
     if (isEnabled && ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
