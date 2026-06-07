@@ -279,6 +279,7 @@ async function fetchDiariesFromCalendar() {
 
     allDiaries = allEvents.filter(e => e.start && e.start.date);
     allDiaries.sort((a, b) => new Date(b.start.date) - new Date(a.start.date));
+    window.allDiaries = allDiaries; // グローバルからアクセスできるように追加
 
     applyFilters();
     renderCalendar();
@@ -1232,7 +1233,7 @@ function renderAchievements() {
   if (grid) {
     grid.innerHTML = '';
     ACHIEVEMENTS.forEach(a => {
-      const isUnlocked = window.isDevMode ? true : unlocked.includes(a.id);
+      const isUnlocked = unlocked.includes(a.id);
       
       // シークレットかつ未解放の場合は表示しない（開発者モード中は強制表示）
       if (a.isSecret && !isUnlocked) {
