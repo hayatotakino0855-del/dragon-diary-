@@ -646,8 +646,6 @@ body {
   position: relative;
   border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 5px;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 100%);
 }
 
 .static-flame-img {
