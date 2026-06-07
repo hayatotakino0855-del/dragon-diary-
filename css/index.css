@@ -159,14 +159,32 @@ body {
 }
 
 @keyframes evolution-charge-anim {
-  0% { filter: brightness(1); opacity: 1; transform: translateX(0); }
-  20% { filter: brightness(1.2) drop-shadow(0 0 10px white); opacity: 0.9; transform: translateX(1px); }
-  40% { filter: brightness(1.5) drop-shadow(0 0 20px white); opacity: 1; transform: translateX(-1px); }
-  60% { filter: brightness(2) drop-shadow(0 0 30px cyan); opacity: 0.8; transform: translateX(2px); }
-  80% { filter: brightness(3) drop-shadow(0 0 50px white); opacity: 1; transform: translateX(-2px); }
-  90% { filter: brightness(5) drop-shadow(0 0 80px cyan); opacity: 0.9; transform: translateX(3px); }
-  95% { filter: brightness(8) drop-shadow(0 0 120px white); opacity: 1; transform: translateX(-3px) scale(1.05); }
-  100% { filter: brightness(15) drop-shadow(0 0 200px white); opacity: 1; transform: translateX(0) scale(1.15); }
+  0% { filter: brightness(1); opacity: 1; transform: scale(1); }
+  10% { filter: brightness(2) drop-shadow(0 0 10px white); opacity: 0.8; transform: scale(1.01); }
+  20% { filter: brightness(1); opacity: 1; transform: scale(1); }
+  30% { filter: brightness(2) drop-shadow(0 0 20px cyan); opacity: 0.7; transform: scale(1.02); }
+  40% { filter: brightness(1.5); opacity: 1; transform: scale(1); }
+  50% { filter: brightness(3) drop-shadow(0 0 40px white); opacity: 0.5; transform: scale(1.03); }
+  60% { filter: brightness(1.5); opacity: 1; transform: scale(1); }
+  70% { filter: brightness(4) drop-shadow(0 0 60px cyan); opacity: 0.4; transform: scale(1.05); }
+  80% { filter: brightness(2); opacity: 1; transform: scale(1); }
+  85% { filter: brightness(6) drop-shadow(0 0 80px white); opacity: 0.3; transform: scale(1.08); }
+  90% { filter: brightness(3); opacity: 1; transform: scale(1); }
+  95% { filter: brightness(10) drop-shadow(0 0 120px cyan); opacity: 0.1; transform: scale(1.1); }
+  100% { filter: brightness(15) drop-shadow(0 0 200px white); opacity: 1; transform: scale(1.15); }
+}
+
+@keyframes particleFlowUp {
+  0% { transform: translateY(0) scale(0); opacity: 0; }
+  20% { transform: translateY(-30px) scale(1); opacity: 1; }
+  80% { transform: translateY(-120px) scale(1); opacity: 1; }
+  100% { transform: translateY(-180px) scale(0); opacity: 0; }
+}
+
+.charge-sparkle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 /* 卵用の進化アニメーション（下部を軸に横揺れ） */
