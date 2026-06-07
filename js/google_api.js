@@ -1091,15 +1091,22 @@ const ACHIEVEMENTS = [
   { id: 'streak_7', name: '一週間の熱狂', desc: '連続7日', icon: 'assets/ui/badge_1week.png', condition: (count, total, level, streak) => streak >= 7 },
   { id: 'streak_30', name: '三十日の執念', desc: '連続30日', icon: 'assets/ui/badge_1month.png', condition: (count, total, level, streak) => streak >= 30 },
 
+  // プレイヤーレベル実績（経験値獲得ポイントに応じた実績）
+  { id: 'lv2', name: '竜の目覚め', desc: 'プレイヤーLv2到達', icon: 'assets/ui/badge_first_step.png', condition: (count, total, level, streak, exp) => level >= 2 },
+  { id: 'lv3', name: '竜騎士の道', desc: 'プレイヤーLv3到達', icon: 'assets/ui/badge_3days.png', condition: (count, total, level, streak, exp) => level >= 3 },
+  { id: 'lv4', name: '絆の深まり', desc: 'プレイヤーLv4到達', icon: 'assets/ui/badge_birth.png', condition: (count, total, level, streak, exp) => level >= 4 },
+  { id: 'lv5', name: '共鳴する心', desc: 'プレイヤーLv5到達', icon: 'assets/ui/badge_1week.png', condition: (count, total, level, streak, exp) => level >= 5 },
+  { id: 'lv7', name: '大空への憧れ', desc: 'プレイヤーLv7到達', icon: 'assets/ui/badge_2weeks.png', condition: (count, total, level, streak, exp) => level >= 7 },
+
   // シークレット実績
-  { id: 'secret_999', name: '伝説の探求者', desc: '秘密の条件', icon: 'assets/ui/badge_100diary.png', condition: (count, total, level) => total >= 999, isSecret: true },
-  { id: 'secret_1000', name: '千年竜の契り（勲章）', desc: '秘密の条件', icon: 'assets/ui/badge_master.png', condition: (count, total, level) => total >= 1000, isSecret: true },
+  { id: 'secret_999', name: '伝説の探求者', desc: '秘密の条件', icon: 'assets/ui/badge_100diary.png', condition: (count, total, level, streak, exp) => total >= 999, isSecret: true },
+  { id: 'secret_1000', name: '千年竜の契り（勲章）', desc: '秘密の条件', icon: 'assets/ui/badge_master.png', condition: (count, total, level, streak, exp) => total >= 1000, isSecret: true },
   
   // プレイヤーレベルのシークレット実績
-  { id: 'secret_lv10', name: '見習い竜使い', desc: '秘密の条件', icon: 'assets/ui/badge_lv10.png', condition: (count, total, level) => level >= 10, isSecret: true },
-  { id: 'secret_lv30', name: '熟練の竜使い', desc: '秘密の条件', icon: 'assets/ui/badge_claw.png', condition: (count, total, level) => level >= 30, isSecret: true },
-  { id: 'secret_lv50', name: '竜の導き手', desc: '秘密の条件', icon: 'assets/ui/badge_eye.png', condition: (count, total, level) => level >= 50, isSecret: true },
-  { id: 'secret_lv100', name: 'マスタードラゴン（勲章）', desc: '秘密の条件', icon: 'assets/ui/badge_master.png', condition: (count, total, level) => level >= 100, isSecret: true },
+  { id: 'secret_lv10', name: '見習い竜使い', desc: '秘密の条件', icon: 'assets/ui/badge_lv10.png', condition: (count, total, level, streak, exp) => level >= 10, isSecret: true },
+  { id: 'secret_lv30', name: '熟練の竜使い', desc: '秘密の条件', icon: 'assets/ui/badge_claw.png', condition: (count, total, level, streak, exp) => level >= 30, isSecret: true },
+  { id: 'secret_lv50', name: '竜の導き手', desc: '秘密の条件', icon: 'assets/ui/badge_eye.png', condition: (count, total, level, streak, exp) => level >= 50, isSecret: true },
+  { id: 'secret_lv100', name: 'マスタードラゴン（勲章）', desc: '秘密の条件', icon: 'assets/ui/badge_master.png', condition: (count, total, level, streak, exp) => level >= 100, isSecret: true },
 ];
 
 function getUnlockedAchievements() {
@@ -1184,10 +1191,11 @@ function checkAchievements() {
   
   // main.js のグローバル変数 playerLevel を取得（なければ 1）
   const currentLevel = window.playerLevel || 1;
+  const currentExp = window.playerExp || 0;
   const streak = calculateStreak();
 
   ACHIEVEMENTS.forEach(a => {
-    if (a.condition(count, totalCount, currentLevel, streak) && !unlocked.includes(a.id)) {
+    if (a.condition(count, totalCount, currentLevel, streak, currentExp) && !unlocked.includes(a.id)) {
       unlocked.push(a.id);
       newlyUnlocked.push(a);
       dates[a.id] = Date.now();
