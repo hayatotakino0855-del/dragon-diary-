@@ -1154,39 +1154,12 @@ function updateDragonNest(stageIndex) {
   const img = document.getElementById('dragonImage');
   if (!nest || !img) return;
   
-  if (stageIndex === 1) { // 第二段階（共鳴の卵）の時だけ小さくして巣を表示
-    nest.src = 'assets/dragons/stage2_nest.png';
-    nest.style.display = 'block';
-    
-    // 少し小さくする (60%サイズにして中央配置)
-    const smallStyle = '60%';
-    const offsetStyle = '20%';
-    nest.style.width = smallStyle;
-    nest.style.height = smallStyle;
-    nest.style.top = offsetStyle;
-    nest.style.left = offsetStyle;
-    
-    img.style.width = smallStyle;
-    img.style.height = smallStyle;
-    img.style.top = offsetStyle;
-    img.style.left = offsetStyle;
-  } else if (stageIndex === 2) { // 第三段階（ひびの卵）も第一段階と同じサイズにする（藁はなし）
-    nest.style.display = 'none';
-    const smallStyle = '60%';
-    const offsetStyle = '20%';
-    img.style.width = smallStyle;
-    img.style.height = smallStyle;
-    img.style.top = offsetStyle;
-    img.style.left = offsetStyle;
-  } else {
-    nest.style.display = 'none';
-    
-    // 元のサイズに戻す
-    img.style.width = '100%';
-    img.style.height = '100%';
-    img.style.top = '8px'; // CSSのデフォルト値
-    img.style.left = '0';
-  }
+  // どの段階でも藁は非表示にし、卵はデフォルトサイズ（100%）にする
+  nest.style.display = 'none';
+  img.style.width = '100%';
+  img.style.height = '100%';
+  img.style.top = '8px'; // CSSのデフォルト値
+  img.style.left = '0';
 }
 
 // 卵専用アニメーション
