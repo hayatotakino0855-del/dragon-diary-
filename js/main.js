@@ -1989,7 +1989,6 @@ document.addEventListener('DOMContentLoaded', () => {
       seAudio.play().then(() => {
         seAudio.pause();
         seAudio.currentTime = 0;
-        seAudio.muted = false;
         document.removeEventListener('click', unlockAudio);
         document.removeEventListener('touchstart', unlockAudio);
       }).catch(e => console.log('Audio unlock failed:', e));
