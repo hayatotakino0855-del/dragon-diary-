@@ -978,6 +978,11 @@ function initRandomVideoActions() {
     dragonVideo.src = randomVideo;
     dragonVideo.load();
     
+    dragonVideo.onerror = () => {
+      console.warn('Video load error', randomVideo);
+      scheduleNextAction();
+    };
+
     dragonVideo.onloadeddata = () => {
       const container = document.querySelector('.dragon-container');
       container.classList.add('flash-active');
@@ -1015,7 +1020,7 @@ function initRandomVideoActions() {
 
     setTimeout(() => {
       container.classList.remove('flash-active');
-      // タイマーはinitRandomVideoActions側で再設定される
+      scheduleNextAction();
     }, 800);
   };
 
