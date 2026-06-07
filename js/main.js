@@ -120,15 +120,17 @@ window.showAchievementToast = function(title, icon) {
   if (window.notifiedAchievements.has(title)) return;
   window.notifiedAchievements.add(title);
 
+  const existingToasts = document.querySelectorAll('.achievement-toast');
+  const offset = 30 + (existingToasts.length * 90); // トーストが複数出た時に重ならないようにする
+
   const toast = document.createElement('div');
   toast.className = 'achievement-toast';
   toast.dataset.title = title;
   toast.style.position = 'fixed';
-  toast.style.top = '-100px';
-  toast.style.left = '50%';
-  toast.style.transform = 'translateX(-50%)';
+  toast.style.bottom = '-100px';
+  toast.style.right = '30px';
   toast.style.zIndex = '9999';
-  toast.style.transition = 'top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+  toast.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
   
   toast.innerHTML = `
     <div style="display: flex; align-items: center; gap: 12px; background: rgba(10, 15, 30, 0.95); border: 1px solid var(--accent-cyan); padding: 15px 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,240,255,0.4); color: white;">
@@ -151,19 +153,17 @@ window.showAchievementToast = function(title, icon) {
 
   // 表示アニメーション
   setTimeout(() => {
-    toast.style.top = '30px';
+    toast.style.bottom = `${offset}px`;
   }, 100);
 
-  // 非表示アニメーションと効果音iframeの削除
+  // 非表示アニメーションと削除
   setTimeout(() => {
-    toast.style.top = '-100px';
+    toast.style.bottom = '-100px';
+    toast.style.opacity = '0';
     setTimeout(() => {
       toast.remove();
-      if (sePlayer && sePlayer.parentNode) {
-        sePlayer.parentNode.removeChild(sePlayer);
-      }
     }, 500);
-  }, 4000);
+  }, 5000);
 };
 
 let currentExp = parseInt(localStorage.getItem('dragonDiaryExp')) || 0;
@@ -426,6 +426,13 @@ function triggerEvolution(targetStageIndex) {
   if (!container) return;
   
   isEvolving = true; // 進化ロック
+  
+  // 次の画像を裏でプリロードしておく（画像切り替え時のチラつき防止）
+  const nextStage = DRAGON_STAGES[targetStageIndex];
+  if (nextStage) {
+    const preloader = new Image();
+    preloader.src = nextStage.image;
+  }
   
   // 0秒: BGMの再生準備
   const bgmEnabled = localStorage.getItem('bgmEnabled') === 'true';
