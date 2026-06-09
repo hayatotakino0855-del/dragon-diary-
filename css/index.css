@@ -668,13 +668,19 @@ body {
 }
 
 .graph-labels {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 1.2em;
   font-size: 0.6rem;
   margin-top: 4px;
   color: var(--text-muted);
-  padding: 0 4px;
 }
+.graph-labels span {
+  position: absolute;
+  top: 0;
+}
+#flameMinLabel { left: 0; }
+#flameMidLabel { left: 50%; transform: translateX(-50%); }
+#flameMaxLabel { right: 0; }
 
 /* ============================================
    Main Content
