@@ -1147,6 +1147,33 @@ body {
 }
 
 /* Achievements */
+.achievement-filters::-webkit-scrollbar {
+  display: none;
+}
+.filter-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.filter-btn.active {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+.achievement-group-title {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin: 20px 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
 .achievements-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

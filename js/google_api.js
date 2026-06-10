@@ -1264,30 +1264,69 @@ function checkAchievements() {
   }
 }
 
+window.currentAchievementFilter = 'all';
+
 function renderAchievements() {
-  const grid = document.getElementById('achievementsGrid');
+  const container = document.getElementById('achievementsContainer');
   const homeGrid = document.getElementById('homeBadgeGrid');
   const unlocked = getUnlockedAchievements();
   
-  if (grid) {
-    grid.innerHTML = '';
-    ACHIEVEMENTS.forEach(a => {
-      const isUnlocked = unlocked.includes(a.id);
-      
-      // シークレットかつ未解放の場合は表示しない（開発者モード中は強制表示）
-      if (a.isSecret && !isUnlocked) {
+  // フィルターボタンのイベントバインド
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  filterBtns.forEach(btn => {
+    btn.onclick = (e) => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      window.currentAchievementFilter = e.target.getAttribute('data-filter');
+      renderAchievements();
+    };
+  });
+
+  if (container) {
+    container.innerHTML = '';
+    
+    const groups = [
+      { id: 'diary', title: '累計日記数' },
+      { id: 'streak', title: '連続記録' },
+      { id: 'stage', title: 'ドラゴン成長' },
+      { id: 'title', title: '称号・レベル' }
+    ];
+
+    groups.forEach(group => {
+      if (window.currentAchievementFilter !== 'all' && window.currentAchievementFilter !== group.id) {
         return;
       }
+      
+      const groupAchievements = ACHIEVEMENTS.filter(a => a.id.startsWith(group.id + '_'));
+      if (groupAchievements.length === 0) return;
 
-      const card = document.createElement('div');
-      card.className = 'achievement-card ' + (isUnlocked ? 'unlocked' : 'locked');
-      card.style.cursor = 'pointer';
-      card.onclick = () => showAchievementDetail(a, isUnlocked);
-      card.innerHTML = `
-        <img src="${a.icon}" class="achieve-icon-img">
-        <div class="achieve-name">${isUnlocked ? a.name : '???'}</div>
-      `;
-      grid.appendChild(card);
+      const groupTitle = document.createElement('div');
+      groupTitle.className = 'achievement-group-title';
+      groupTitle.innerText = group.title;
+      container.appendChild(groupTitle);
+
+      const grid = document.createElement('div');
+      grid.className = 'achievements-grid';
+      
+      groupAchievements.forEach(a => {
+        const isUnlocked = unlocked.includes(a.id);
+        
+        // シークレットかつ未解放の場合は表示しない
+        if (a.isSecret && !isUnlocked) {
+          return;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'achievement-card ' + (isUnlocked ? 'unlocked' : 'locked');
+        card.style.cursor = 'pointer';
+        card.onclick = () => showAchievementDetail(a, isUnlocked);
+        card.innerHTML = `
+          <img src="${a.icon}" class="achieve-icon-img">
+          <div class="achieve-name">${isUnlocked ? a.name : '???'}</div>
+        `;
+        grid.appendChild(card);
+      });
+      container.appendChild(grid);
     });
   }
 
