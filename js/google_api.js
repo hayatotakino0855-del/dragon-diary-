@@ -1078,13 +1078,21 @@ function showCalendarDiaries(year, month, day) {
 // 6. 実績システム（段階的獲得）
 // ==========================================
 const ACHIEVEMENTS = [
-  // 日記の記録実績
-  { id: 'diary_1', name: '最初の日記', desc: '累計1件', icon: 'assets/ui/badge_diary_1.png', condition: (count, total, level, streak) => total >= 1 },
-  { id: 'diary_10', name: '日記10件達成', desc: '累計10件', icon: 'assets/ui/badge_diary_10.png', condition: (count, total, level, streak) => total >= 10 },
-  { id: 'diary_30', name: '日記30件達成', desc: '累計30件', icon: 'assets/ui/badge_diary_30.png', condition: (count, total, level, streak) => total >= 30 },
-  { id: 'diary_50', name: '日記50件達成', desc: '累計50件', icon: 'assets/ui/badge_diary_50.png', condition: (count, total, level, streak) => total >= 50 },
-  { id: 'diary_100', name: '日記100件達成', desc: '累計100件', icon: 'assets/ui/badge_diary_100.png', condition: (count, total, level, streak) => total >= 100 },
-  { id: 'diary_365', name: '365日の記録', desc: '累計365件', icon: 'assets/ui/badge_diary_365.png', condition: (count, total, level, streak) => total >= 365 },
+  // 日記の記録実績 (6月1日以降の件数を基準とする)
+  { id: 'diary_1', name: '最初の日記', desc: '累計1件', icon: 'assets/ui/badge_diary_1.svg', condition: (count, total, level, streak) => count >= 1 },
+  { id: 'diary_10', name: '日記10件達成', desc: '累計10件', icon: 'assets/ui/badge_diary_10.svg', condition: (count, total, level, streak) => count >= 10 },
+  { id: 'diary_30', name: '日記30件達成', desc: '累計30件', icon: 'assets/ui/badge_diary_30.svg', condition: (count, total, level, streak) => count >= 30 },
+  { id: 'diary_50', name: '日記50件達成', desc: '累計50件', icon: 'assets/ui/badge_diary_50.svg', condition: (count, total, level, streak) => count >= 50 },
+  { id: 'diary_100', name: '日記100件達成', desc: '累計100件', icon: 'assets/ui/badge_diary_100.svg', condition: (count, total, level, streak) => count >= 100 },
+  { id: 'diary_150', name: '日記150件達成', desc: '累計150件', icon: 'assets/ui/badge_diary_150.svg', condition: (count, total, level, streak) => count >= 150 },
+  { id: 'diary_200', name: '日記200件達成', desc: '累計200件', icon: 'assets/ui/badge_diary_200.svg', condition: (count, total, level, streak) => count >= 200 },
+  { id: 'diary_250', name: '日記250件達成', desc: '累計250件', icon: 'assets/ui/badge_diary_250.svg', condition: (count, total, level, streak) => count >= 250 },
+  { id: 'diary_300', name: '日記300件達成', desc: '累計300件', icon: 'assets/ui/badge_diary_300.svg', condition: (count, total, level, streak) => count >= 300 },
+  { id: 'diary_350', name: '日記350件達成', desc: '累計350件', icon: 'assets/ui/badge_diary_350.svg', condition: (count, total, level, streak) => count >= 350 },
+  { id: 'diary_365', name: '365日の記録', desc: '累計365件', icon: 'assets/ui/badge_diary_365.svg', condition: (count, total, level, streak) => count >= 365 },
+  { id: 'diary_400', name: '日記400件達成', desc: '累計400件', icon: 'assets/ui/badge_diary_400.svg', condition: (count, total, level, streak) => count >= 400 },
+  { id: 'diary_450', name: '日記450件達成', desc: '累計450件', icon: 'assets/ui/badge_diary_450.svg', condition: (count, total, level, streak) => count >= 450 },
+  { id: 'diary_500', name: '日記500件達成', desc: '累計500件', icon: 'assets/ui/badge_diary_500.svg', condition: (count, total, level, streak) => count >= 500 },
   
   // 連続記録実績
   { id: 'streak_3', name: '3日連続記録', desc: '連続3日', icon: 'assets/ui/badge_streak_3.svg', condition: (count, total, level, streak) => streak >= 3 },
@@ -1212,7 +1220,7 @@ function checkAchievements() {
   const streak = calculateStreak();
 
   ACHIEVEMENTS.forEach(a => {
-    if (a.condition(count, count, currentLevel, streak, currentExp) && !unlocked.includes(a.id)) {
+    if (a.condition(count, totalCount, currentLevel, streak, currentExp) && !unlocked.includes(a.id)) {
       unlocked.push(a.id);
       newlyUnlocked.push(a);
       dates[a.id] = Date.now();
@@ -1323,6 +1331,13 @@ window.saveDiaryToGoogle = async function(title, body, file, targetDateStr) {
           assignments[result.result.id] = [...selectedWriteTags];
           saveTagAssignments(assignments);
           selectedWriteTags = [];
+        }
+
+        // ローカルで即時反映して実績判定を行う（カレンダーAPIの反映遅延対策）
+        if (!window.allDiaries) window.allDiaries = [];
+        window.allDiaries.unshift(result.result);
+        if (typeof checkAchievements === 'function') {
+          checkAchievements();
         }
 
         fetchDiariesFromCalendar();
