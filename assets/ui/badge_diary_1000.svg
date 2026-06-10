@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <filter id="glow2"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+    <linearGradient id="gradB" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <!-- Special Crown -->
+  <path d="M 25,18 L 35,32 L 50,10 L 65,32 L 75,18 L 68,38 L 32,38 Z" fill="#f59e0b" opacity="0.9" filter="url(#glow2)"/>
+  <circle cx="25" cy="18" r="3" fill="#ffffff" filter="url(#glow2)"/>
+  <circle cx="50" cy="10" r="3" fill="#ffffff" filter="url(#glow2)"/>
+  <circle cx="75" cy="18" r="3" fill="#ffffff" filter="url(#glow2)"/>
+  <!-- Shield Body pushed down slightly -->
+  <path d="M 50,35 L 90,45 L 90,70 C 90,90 50,98 50,98 C 50,98 10,90 10,70 L 10,45 Z" fill="url(#gradB)" stroke="#f59e0b" stroke-width="3" filter="url(#glow2)"/>
+  <path d="M 50,42 L 82,50 L 82,68 C 82,83 50,92 50,92 C 50,92 18,83 18,68 L 18,50 Z" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.2"/>
+  <!-- Text -->
+  <text x="50" y="66" font-family="Impact, 'Arial Black', sans-serif" font-size="24" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" filter="url(#glow2)">1000</text>
+  <text x="50" y="85" font-family="system-ui, -apple-system, sans-serif" font-size="8" font-weight="bold" fill="#f59e0b" text-anchor="middle" letter-spacing="1">DIARIES</text>
+</svg>
