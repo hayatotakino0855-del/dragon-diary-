@@ -345,6 +345,46 @@ function calculateStreak() {
   return streak;
 }
 
+function calculateMaxStreak() {
+  if (!window.allDiaries || window.allDiaries.length === 0) return 0;
+  
+  const uniqueDates = new Set();
+  window.allDiaries.forEach(d => {
+    if (d.start && d.start.date) {
+      uniqueDates.add(d.start.date);
+    }
+  });
+  
+  const dateObjs = Array.from(uniqueDates).map(ds => {
+    const [y, m, d] = ds.split('-');
+    return new Date(y, m - 1, d);
+  }).sort((a, b) => a - b);
+
+  let maxStreak = 0;
+  let current = 0;
+  let prevDate = null;
+
+  for (let i = 0; i < dateObjs.length; i++) {
+    if (prevDate === null) {
+      current = 1;
+    } else {
+      const diff = Math.round((dateObjs[i] - prevDate) / 86400000);
+      if (diff === 1) {
+        current++;
+      } else if (diff === 0) {
+        continue;
+      } else {
+        current = 1;
+      }
+    }
+    if (current > maxStreak) {
+      maxStreak = current;
+    }
+    prevDate = dateObjs[i];
+  }
+  return maxStreak;
+}
+
 function syncPlayerStats() {
   const totalDiaries = allDiaries.length;
   const uniqueDates = new Set();
@@ -376,11 +416,10 @@ function syncPlayerStats() {
   const unlocked = JSON.parse(localStorage.getItem('unlockedAchievements') || '[]');
   if (elDays) elDays.innerHTML = `${unlocked.length}<span class="habit-unit">個</span>`;
   
-  // ご要望により、UI上の表示も「連続記録日4日」に固定（実態が4未満の場合）
-  if (streak < 4) streak = 4;
+  const maxStreak = calculateMaxStreak();
   
   const elStreak = document.getElementById('displayStreakDays');
-  if (elStreak) elStreak.innerHTML = `🔥${streak}<span class="habit-unit">日</span>`;
+  if (elStreak) elStreak.innerHTML = `🔥${maxStreak}<span class="habit-unit">日</span>`;
   
   const elDiaries = document.getElementById('displayTotalDiaries');
   if (elDiaries) elDiaries.innerHTML = `${totalDiaries}<span class="habit-unit">件</span>`;
@@ -1227,10 +1266,11 @@ function checkAchievements() {
   // main.js のグローバル変数 playerLevel を取得（なければ 1）
   const currentLevel = window.playerLevel || 1;
   const currentExp = window.playerExp || 0;
-  const streak = calculateStreak();
+  const currentStreak = calculateStreak();
+  const maxStreak = calculateMaxStreak();
 
   ACHIEVEMENTS.forEach(a => {
-    if (a.condition(count, totalCount, currentLevel, streak, currentExp) && !unlocked.includes(a.id)) {
+    if (a.condition(count, totalCount, currentLevel, maxStreak, currentExp) && !unlocked.includes(a.id)) {
       unlocked.push(a.id);
       newlyUnlocked.push(a);
       dates[a.id] = Date.now();
