@@ -500,7 +500,15 @@ function renderCurrentPage() {
     const dateObj = new Date(diary.start.date);
     const dateStr = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
     let title = diary.summary || '無題';
-    const desc = diary.description || '';
+    let desc = diary.description || '';
+    
+    let expBadgeHtml = '<span class="diary-xp" style="color: #6b7280; text-shadow: none;">(同期済)</span>';
+    const expMatch = desc.match(/\[EXP:\s*\+?(\d+)\]/i);
+    if (expMatch) {
+      desc = desc.replace(expMatch[0], '').trim();
+      expBadgeHtml = `<span class="diary-xp" style="color: var(--accent-orange); text-shadow: 0 0 5px rgba(245,158,11,0.5); font-weight: bold;">+${expMatch[1]} EXP</span>`;
+    }
+    
     let preview = desc.replace(/\n/g, ' ');
 
     // 検索ワードのハイライトとスニペット抽出
@@ -545,7 +553,7 @@ function renderCurrentPage() {
       <div class="diary-preview">${preview}</div>
       <div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:4px;">${tagHtml}</div>
       <div class="diary-reactions">
-        <span class="diary-xp" style="color: #6b7280; text-shadow: none;">(同期済)</span>
+        ${expBadgeHtml}
       </div>
     `;
 
@@ -591,6 +599,13 @@ function openDiaryDetailModal(diary, isSwipe = false) {
     desc = desc.replace(photoMatch[0], '').trim();
   }
   
+  let expBadgeHtml = '';
+  const expMatch = desc.match(/\[EXP:\s*\+?(\d+)\]/i);
+  if (expMatch) {
+    desc = desc.replace(expMatch[0], '').trim();
+    expBadgeHtml = `<span style="background: rgba(245, 158, 11, 0.2); color: var(--accent-orange); padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; border: 1px solid rgba(245,158,11,0.4);">+${expMatch[1]} EXP獲得</span>`;
+  }
+  
   // 改行を <br> に変換
   let formattedDesc = desc.replace(/\n/g, '<br>');
   let displayTitle = title;
@@ -634,6 +649,7 @@ function openDiaryDetailModal(diary, isSwipe = false) {
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
           </svg>
           ${dateStr}
+          ${expBadgeHtml ? `<div style="margin-left: auto;">${expBadgeHtml}</div>` : ''}
         </div>
         <div style="flex: 1; overflow-y: auto; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem; word-break: break-word; min-height: 0;">
           ${formattedDesc}
@@ -1545,7 +1561,34 @@ document.addEventListener('DOMContentLoaded', () => {
       saveBtn.disabled = true;
 
       const targetDateStr = document.getElementById('writeDateInput').value || window.getVirtualTodayStr();
-      const success = await window.saveDiaryToGoogle(title, body, file, targetDateStr);
+      
+      let expGained = 0;
+      if (targetDateStr === window.getVirtualTodayStr() && typeof window.gainExp === 'function') {
+        let exp = 20; // 基本経験値
+        const textLen = body.replace(/\s+/g, '').length;
+        let textBonus = Math.floor(textLen / 100) * 10;
+        if (textBonus > 200) textBonus = 200;
+        exp += textBonus;
+
+        const streakText = document.getElementById('todayStreakDisplay').textContent || '0';
+        const currentStreak = parseInt(streakText, 10);
+        
+        if (currentStreak >= 100) exp += 300;
+        else if (currentStreak >= 30) exp += 100;
+        else if (currentStreak >= 14) exp += 50;
+        else if (currentStreak >= 7) exp += 30;
+        else if (currentStreak >= 3) exp += 10;
+        
+        expGained = exp;
+      }
+      
+      let finalBody = body;
+      // 既に [EXP: +XXX] がある場合は二重に追加しないようチェック
+      if (expGained > 0 && !finalBody.includes('[EXP: +')) {
+        finalBody += `\n\n[EXP: +${expGained}]`;
+      }
+
+      const success = await window.saveDiaryToGoogle(title, finalBody, file, targetDateStr);
 
       saveBtn.textContent = originalText;
       saveBtn.disabled = false;
@@ -1557,24 +1600,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const homeBtn = document.querySelector('[data-page="home"]');
         if (homeBtn) homeBtn.click();
 
-        // 対象日が基準日の場合のみ経験値付与
-        if (targetDateStr === window.getVirtualTodayStr() && typeof window.gainExp === 'function') {
-          let exp = 20; // 基本経験値
-          const textLen = body.replace(/\s+/g, '').length;
-          let textBonus = Math.floor(textLen / 100) * 10;
-          if (textBonus > 200) textBonus = 200;
-          exp += textBonus;
-
-          const streakText = document.getElementById('todayStreakDisplay').textContent || '0';
-          const currentStreak = parseInt(streakText, 10);
-          
-          if (currentStreak >= 100) exp += 300;
-          else if (currentStreak >= 30) exp += 100;
-          else if (currentStreak >= 14) exp += 50;
-          else if (currentStreak >= 7) exp += 30;
-          else if (currentStreak >= 3) exp += 10;
-
-          window.gainExp(exp);
+        // 経験値付与の実行
+        if (expGained > 0) {
+          window.gainExp(expGained);
         }
       }
     });

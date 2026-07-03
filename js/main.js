@@ -288,6 +288,41 @@ window.retroGrantJuneExp = function() {
 function gainExp(amount) {
   if (isEvolving) return; // 進化中はEXP取得（連打）を無視する
   
+  if (amount > 0) {
+    // 獲得EXPのフローティングアニメーション
+    const target = document.getElementById('powerValueDisplay') || document.querySelector('.circle-gauge') || document.body;
+    const rect = target.getBoundingClientRect();
+    const floatText = document.createElement('div');
+    floatText.textContent = `+${amount} EXP`;
+    floatText.style.position = 'fixed';
+    floatText.style.left = `${rect.left + rect.width / 2}px`;
+    floatText.style.top = `${rect.top + rect.height / 2}px`;
+    floatText.style.transform = 'translate(-50%, -50%)';
+    floatText.style.color = '#fff';
+    floatText.style.fontWeight = 'bold';
+    floatText.style.fontSize = '1.8rem';
+    floatText.style.textShadow = '0 0 10px rgba(0, 240, 255, 0.8), 0 0 20px rgba(0, 240, 255, 0.5)';
+    floatText.style.pointerEvents = 'none';
+    floatText.style.zIndex = '9999';
+    floatText.style.transition = 'all 2s cubic-bezier(0.1, 0.8, 0.3, 1)';
+    floatText.style.opacity = '1';
+    
+    document.body.appendChild(floatText);
+    
+    // 少し遅延させてから上に移動・フェードアウトさせる
+    setTimeout(() => {
+      floatText.style.transform = 'translate(-50%, -150px) scale(1.2)';
+      floatText.style.opacity = '0';
+      floatText.style.textShadow = '0 0 20px rgba(245, 158, 11, 0.8), 0 0 30px rgba(245, 158, 11, 0.5)';
+      floatText.style.color = '#f59e0b';
+    }, 50);
+    
+    // アニメーション完了後に要素を削除
+    setTimeout(() => {
+      floatText.remove();
+    }, 2050);
+  }
+
   currentExp += amount;
   localStorage.setItem('dragonDiaryExp', currentExp); // 経験値をローカル保存
   // レベル1=0, レベル2=100, レベル3=300, レベル4=600 ...というように
