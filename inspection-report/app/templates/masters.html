@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <div class="row-between">
+    <h2>会社マスタ</h2>
+    <button id="btn-add-company">+ 追加</button>
+  </div>
+  <table class="list" id="companies-table">
+    <thead><tr><th>会社名</th><th>備考</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<section class="card">
+  <div class="row-between">
+    <h2>特性マスタ(よく使う特性定義)</h2>
+    <button id="btn-add-master">+ 追加</button>
+  </div>
+  <table class="list" id="masters-table">
+    <thead><tr><th>名称</th><th>タイプ</th><th>中心値</th><th>公差</th>
+      <th>サブ名称</th><th>サブ規格</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <p class="hint">テンプレート編集画面の「特性マスタから追加…」で呼び出せます。</p>
+</section>
+
+<dialog id="dlg-company">
+  <form method="dialog" class="dlg-form">
+    <h3>会社</h3>
+    <label>会社名 <input name="name" required></label>
+    <label>備考 <input name="note"></label>
+    <menu><button value="cancel" formnovalidate>キャンセル</button>
+          <button value="ok" class="primary">保存</button></menu>
+  </form>
+</dialog>
+
+<dialog id="dlg-master">
+  <form method="dialog" class="dlg-form">
+    <h3>特性</h3>
+    <label>名称 <input name="name" required></label>
+    <label>タイプ
+      <select name="type">
+        <option value="bilateral">bilateral(両側公差)</option>
+        <option value="bilateral_with_sub">bilateral_with_sub(両側+サブ)</option>
+        <option value="unilateral">unilateral(片側・以下)</option>
+        <option value="weight">weight(重量)</option>
+        <option value="visual">visual(外観○×)</option>
+        <option value="measured">measured(実測値記入)</option>
+      </select></label>
+    <label>中心値 <input name="center_value"></label>
+    <label>公差 <input name="tolerance"></label>
+    <label>サブ名称 <input name="sub_name"></label>
+    <label>サブ規格 <input name="sub_tolerance"></label>
+    <label>判定基準(visual用) <input name="criteria" placeholder="有害な欠陥無き事"></label>
+    <menu><button value="cancel" formnovalidate>キャンセル</button>
+          <button value="ok" class="primary">保存</button></menu>
+  </form>
+</dialog>
+{% endblock %}
+{% block scripts %}<script src="/static/masters.js"></script>{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="filters card">
+  <input id="f-q" placeholder="キーワード(会社/品番/図番/材質/帳票名)">
+  <input id="f-company" placeholder="会社">
+  <input id="f-part" placeholder="品番">
+  <input id="f-drawing" placeholder="図番">
+  <input id="f-template" placeholder="テンプレート名">
+  <label class="chk"><input type="checkbox" id="f-archived"> 旧改訂も表示</label>
+  <button id="btn-search" class="primary">検索</button>
+</section>
+
+<section class="actions">
+  <button id="btn-add-company">+ 会社を追加</button>
+  <button id="btn-add-product">+ 品番を追加</button>
+  <button id="btn-seed" class="ghost">サンプルデータ投入 (KO-5155B-HT)</button>
+</section>
+
+<section id="tree"></section>
+
+<dialog id="dlg-company">
+  <form method="dialog" class="dlg-form">
+    <h3 id="dlg-company-title">会社を追加</h3>
+    <label>会社名 <input name="name" required></label>
+    <label>備考 <input name="note"></label>
+    <menu><button value="cancel" formnovalidate>キャンセル</button>
+          <button value="ok" class="primary">保存</button></menu>
+  </form>
+</dialog>
+
+<dialog id="dlg-product">
+  <form method="dialog" class="dlg-form">
+    <h3 id="dlg-product-title">品番を追加</h3>
+    <label>会社 <select name="company_id" required></select></label>
+    <label>品番 <input name="part_no" required placeholder="6212RSH2 SET"></label>
+    <label>図番 <input name="drawing_no" placeholder="KO-5155B-HT"></label>
+    <label>材質・径 <input name="material" placeholder=" SUJ2Ⓢ・φ44"></label>
+    <label>容器入個数 <input name="container_qty_note" placeholder="3000個未満"></label>
+    <label>頻度 <input name="frequency_note" placeholder="n=2/容器"></label>
+    <menu><button value="cancel" formnovalidate>キャンセル</button>
+          <button value="ok" class="primary">保存</button></menu>
+  </form>
+</dialog>
+
+<dialog id="dlg-export">
+  <form method="dialog" class="dlg-form">
+    <h3>Excel出力</h3>
+    <p>出力形式を選択してください。</p>
+    <div id="export-choices"></div>
+    <menu><button value="cancel" formnovalidate>キャンセル</button></menu>
+  </form>
+</dialog>
+
+<dialog id="dlg-new-template">
+  <form method="dialog" class="dlg-form">
+    <h3>テンプレートを追加</h3>
+    <label>帳票名(輪種別) <input name="name" required placeholder="外輪 / 内輪"></label>
+    <label>作成者 <input name="author"></label>
+    <menu><button value="cancel" formnovalidate>キャンセル</button>
+          <button value="ok" class="primary">作成して編集へ</button></menu>
+  </form>
+</dialog>
+{% endblock %}
+{% block scripts %}<script src="/static/index.js"></script>{% endblock %}
