@@ -281,6 +281,7 @@ async function fetchDiariesFromCalendar() {
     allDiaries.sort((a, b) => new Date(b.start.date) - new Date(a.start.date));
     window.allDiaries = allDiaries; // グローバルからアクセスできるように追加
 
+    recoverExpFromDiaries(); // ローカルEXPが失われていた場合、日記の記録から復元
     applyFilters();
     renderCalendar();
     checkAchievements();
@@ -383,6 +384,31 @@ function calculateMaxStreak() {
     prevDate = dateObjs[i];
   }
   return maxStreak;
+}
+
+// 端末側のストレージが消えてEXPが失われた場合の復旧処理。
+// 日記本文に保存済みの[EXP:+N]タグ（カレンダー側）を合計し、ローカルのEXPがそれを下回っていたら不足分だけ補填する。
+// ローカルのEXPを減らすことはない。
+function recoverExpFromDiaries() {
+  if (!window.allDiaries || window.allDiaries.length === 0) return;
+  if (typeof window.gainExp !== 'function') return;
+
+  let calendarExp = 0;
+  window.allDiaries.forEach(d => {
+    const desc = d.description || '';
+    const m = desc.match(/\[EXP:\s*\+?(\d+)\]/i);
+    if (m) calendarExp += parseInt(m[1], 10);
+  });
+
+  const localExp = parseInt(localStorage.getItem('dragonDiaryExp')) || 0;
+  if (calendarExp > localExp) {
+    const shortfall = calendarExp - localExp;
+    window.gainExp(shortfall);
+    console.log(`[EXP復旧] ローカルのEXPが日記の記録(${calendarExp})より少なかったため ${shortfall} EXP を復元しました`);
+    if (typeof window.showInAppNotification === 'function') {
+      window.showInAppNotification('🛡️EXPを復元しました', `端末のデータが失われていたため、日記の記録から ${shortfall} EXPを復元しました`);
+    }
+  }
 }
 
 function syncPlayerStats() {
@@ -1293,7 +1319,19 @@ function checkAchievements() {
     }
   });
   
-  if (newlyUnlocked.length > 0) {
+  if (newlyUnlocked.length > 3) {
+    // 端末側のunlockedAchievementsが消えていた場合、現在の状態から条件を満たす実績が
+    // 一斉に「新規解放」判定されてしまう。1件ずつトースト+効果音を鳴らすと大量連打になるため、
+    // ストレージ消失からの復元とみなしてまとめて1回だけ通知する。
+    saveUnlockedAchievements(unlocked);
+    saveAchievementDates(dates);
+    renderAchievements();
+
+    console.log(`[実績復元] ${newlyUnlocked.length}件の実績データをまとめて復元しました`);
+    if (typeof window.showInAppNotification === 'function') {
+      window.showInAppNotification('🛡️実績データを復元しました', `端末のデータが失われていたため、${newlyUnlocked.length}件の実績を再取得しました`);
+    }
+  } else if (newlyUnlocked.length > 0) {
     saveUnlockedAchievements(unlocked);
     saveAchievementDates(dates);
     renderAchievements();

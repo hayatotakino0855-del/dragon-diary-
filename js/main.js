@@ -1699,8 +1699,16 @@ function initRadarChart() {
       // タップ1回につき0.5、詳細閲覧1回につき1.0とし、合計300でMAXにするなど基準を引き上げる
       vAffection = Math.min((views * 1.0 + taps * 0.5) / 300, 1.0);
 
-      // 4. 探索: 現在0
-      vExploration = 0;
+      // 4. 探索: 日記への写真添付回数・タグ付け回数
+      let photoCount = 0;
+      diaries.forEach(d => {
+        if (/【添付写真】\s*https?:\/\//.test(d.description || '')) photoCount++;
+      });
+      let tagCount = 0;
+      const tagAssignments = typeof getTagAssignments === 'function' ? getTagAssignments() : {};
+      Object.values(tagAssignments).forEach(tags => { tagCount += (tags || []).length; });
+      // 写真添付1回につき1.5、タグ付け1回につき1.0とし、合計20でMaxにする
+      vExploration = Math.min((photoCount * 1.5 + tagCount * 1.0) / 20, 1.0);
 
       // 5. 魔力: 経験値(exp)で計算 (ご要望により現在のEXPを利用、上限を調整)
       // 魔力は1000EXPでMaxにする
