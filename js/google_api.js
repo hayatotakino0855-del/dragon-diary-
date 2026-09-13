@@ -534,7 +534,12 @@ function renderCurrentPage() {
       desc = desc.replace(expMatch[0], '').trim();
       expBadgeHtml = `<span class="diary-xp" style="color: var(--accent-orange); text-shadow: 0 0 5px rgba(245,158,11,0.5); font-weight: bold;">+${expMatch[1]} EXP</span>`;
     }
-    
+
+    // 体重計OCRのマーカーは一覧プレビューには不要なため除去のみ行う
+    ['体重', '体脂肪率', '内臓脂肪レベル', 'BMI'].forEach(label => {
+      desc = desc.replace(new RegExp(`\\[${label}:\\s*[^\\]]+\\]`), '').trim();
+    });
+
     let preview = desc.replace(/\n/g, ' ');
 
     // 検索ワードのハイライトとスニペット抽出
@@ -631,7 +636,18 @@ function openDiaryDetailModal(diary, isSwipe = false) {
     desc = desc.replace(expMatch[0], '').trim();
     expBadgeHtml = `<span style="background: rgba(245, 158, 11, 0.2); color: var(--accent-orange); padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; border: 1px solid rgba(245,158,11,0.4);">+${expMatch[1]} EXP獲得</span>`;
   }
-  
+
+  // 体重計OCRで記録した項目（体重・体脂肪率・内臓脂肪レベル・BMI）の抽出
+  let weightBadgesHtml = '';
+  ['体重', '体脂肪率', '内臓脂肪レベル', 'BMI'].forEach(label => {
+    const re = new RegExp(`\\[${label}:\\s*([^\\]]+)\\]`);
+    const m = desc.match(re);
+    if (m) {
+      desc = desc.replace(m[0], '').trim();
+      weightBadgesHtml += `<span style="background: rgba(0,240,255,0.12); color: var(--accent-cyan); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; border: 1px solid rgba(0,240,255,0.3); margin-right: 6px;">${label}: ${m[1].trim()}</span>`;
+    }
+  });
+
   // 改行を <br> に変換
   let formattedDesc = desc.replace(/\n/g, '<br>');
   let displayTitle = title;
@@ -677,6 +693,7 @@ function openDiaryDetailModal(diary, isSwipe = false) {
           ${dateStr}
           ${expBadgeHtml ? `<div style="margin-left: auto;">${expBadgeHtml}</div>` : ''}
         </div>
+        ${weightBadgesHtml ? `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom: 15px; flex-shrink: 0;">${weightBadgesHtml}</div>` : ''}
         <div style="flex: 1; overflow-y: auto; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem; word-break: break-word; min-height: 0;">
           ${formattedDesc}
           ${photoUrl ? `<div style="margin-top: 15px;"><a href="${photoUrl}" target="_blank" style="color: var(--accent-blue); text-decoration: underline;">添付写真を見る (Google Drive)</a></div>` : ''}
@@ -1635,6 +1652,7 @@ document.addEventListener('DOMContentLoaded', () => {
         titleInput.value = '';
         bodyInput.value = '';
         if (removeBtn) removeBtn.click();
+        if (typeof window.resetWeightRecordUI === 'function') window.resetWeightRecordUI();
         const homeBtn = document.querySelector('[data-page="home"]');
         if (homeBtn) homeBtn.click();
 

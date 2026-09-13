@@ -348,6 +348,10 @@
               <button id="removePhotoBtn" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">✕</button>
             </div>
           </div>
+          <div class="photo-attach-area" id="weightRecordArea" style="cursor: pointer; margin-top: 10px;">
+            <div class="attach-button" id="weightRecordBtn">⚖️ 体重を記録する</div>
+            <div id="weightRecordSummary" style="display: none; margin-top: 8px; flex-wrap: wrap; gap: 6px;"></div>
+          </div>
         </div>
       </div>
 
@@ -391,5 +395,8 @@
   <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="js/google_api.js?v=147"></script>
+  <!-- 体重計OCR記録機能（ブラウザ内完結。撮影画像は保存・送信しない） -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="js/weight_ocr.js?v=147"></script>
 </body>
 </html>
