@@ -9,6 +9,12 @@ const WEIGHT_METRICS = [
   { key: 'bmi', label: 'BMI', unit: '' }
 ];
 
+// 撮影ガイド枠の比率。数字部分だけに絞るため、ラベル文字やアイコンを含まないよう縦を狭くしている。
+// index.htmlの案内枠(#weightOcrOverlay内のdashed枠)のwidth/heightと必ず一致させること。
+const CROP_WIDTH_RATIO = 0.6;
+const CROP_HEIGHT_RATIO = 0.2;
+const OCR_UPSCALE = 2;
+
 let weightReadings = {};
 let currentMetricIndex = 0;
 let currentStream = null;
@@ -17,7 +23,10 @@ let ocrWorker = null;
 async function ensureOcrWorker() {
   if (!ocrWorker) {
     ocrWorker = await Tesseract.createWorker('eng');
-    await ocrWorker.setParameters({ tessedit_char_whitelist: '0123456789.' });
+    await ocrWorker.setParameters({
+      tessedit_char_whitelist: '0123456789.',
+      tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE
+    });
   }
   return ocrWorker;
 }
@@ -25,36 +34,53 @@ async function ensureOcrWorker() {
 function captureCroppedFrame(video) {
   const vw = video.videoWidth;
   const vh = video.videoHeight;
-  const cw = Math.round(vw * 0.7);
-  const ch = Math.round(vh * 0.35);
+  const cw = Math.round(vw * CROP_WIDTH_RATIO);
+  const ch = Math.round(vh * CROP_HEIGHT_RATIO);
   const cx = Math.round((vw - cw) / 2);
   const cy = Math.round((vh - ch) / 2);
 
+  // 数字の線が細切れにならないよう拡大してからOCRに渡す
   const canvas = document.getElementById('weightOcrCanvas');
-  canvas.width = cw;
-  canvas.height = ch;
+  canvas.width = cw * OCR_UPSCALE;
+  canvas.height = ch * OCR_UPSCALE;
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, cx, cy, cw, ch, 0, 0, cw, ch);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(video, cx, cy, cw, ch, 0, 0, canvas.width, canvas.height);
   return canvas;
 }
 
-// 単純な二値化（グレースケール化+閾値）でセグメント表示の視認性を上げる
+// グレースケール化+適応的な閾値（画面の平均輝度基準）で二値化し、セグメント表示の視認性を上げる
 function preprocessForOcr(canvas) {
   const ctx = canvas.getContext('2d');
   const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const d = imgData.data;
-  for (let i = 0; i < d.length; i += 4) {
+
+  let sum = 0;
+  const grayValues = new Uint8ClampedArray(d.length / 4);
+  for (let i = 0, p = 0; i < d.length; i += 4, p++) {
     const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-    const v = gray > 128 ? 255 : 0;
+    grayValues[p] = gray;
+    sum += gray;
+  }
+  const threshold = sum / grayValues.length;
+
+  for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+    const v = grayValues[p] > threshold ? 255 : 0;
     d[i] = d[i + 1] = d[i + 2] = v;
   }
   ctx.putImageData(imgData, 0, 0);
   return canvas;
 }
 
+// 複数の数字候補が混じっても、最も桁数が多い（＝ラベル文字の誤認識ではなく本来の表示値らしい）ものを採用する
 function parseNumberFromText(text) {
-  const match = text.match(/\d{1,3}(?:\.\d{1,2})?/);
-  return match ? match[0] : '';
+  const matches = text.match(/\d{1,3}(?:\.\d{1,2})?/g);
+  if (!matches || matches.length === 0) return '';
+  return matches.reduce((best, cur) => {
+    if (cur.replace('.', '').length > best.replace('.', '').length) return cur;
+    if (cur.replace('.', '').length === best.replace('.', '').length && cur.includes('.') && !best.includes('.')) return cur;
+    return best;
+  });
 }
 
 function stripExistingMarkers(text) {
@@ -142,7 +168,7 @@ function updateCurrentMetricUI(overlay) {
   const m = WEIGHT_METRICS[currentMetricIndex];
   overlay.querySelector('#weightOcrCurrentLabel').textContent = m.label;
   overlay.querySelector('#weightOcrValueInput').value = weightReadings[m.key] || '';
-  overlay.querySelector('#weightOcrStatus').textContent = '体重計の数字表示を枠に合わせて📸を押してください';
+  overlay.querySelector('#weightOcrStatus').textContent = 'ラベル文字を含めず、数字だけが枠に入るように合わせて📸を押してください';
 }
 
 async function handleShutter(overlay) {
@@ -211,10 +237,10 @@ async function openWeightRecordModal() {
       <div id="weightOcrTabs" style="display:flex; gap:6px; margin-bottom:10px; flex-shrink:0; flex-wrap:wrap;"></div>
       <div style="position:relative; flex:1; min-height:0; background:#000; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
         <video id="weightOcrVideo" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover;"></video>
-        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:70%; height:35%; border:2px dashed var(--accent-cyan); border-radius:8px; pointer-events:none;"></div>
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:60%; height:20%; border:2px dashed var(--accent-cyan); border-radius:8px; pointer-events:none;"></div>
         <canvas id="weightOcrCanvas" style="display:none;"></canvas>
       </div>
-      <div id="weightOcrStatus" style="font-size:0.8rem; color:var(--text-muted); text-align:center; margin-top:8px; flex-shrink:0;">体重計の数字表示を枠に合わせて📸を押してください</div>
+      <div id="weightOcrStatus" style="font-size:0.8rem; color:var(--text-muted); text-align:center; margin-top:8px; flex-shrink:0;">ラベル文字を含めず、数字だけが枠に入るように合わせて📸を押してください</div>
       <div style="display:flex; gap:10px; align-items:center; margin-top:10px; flex-shrink:0;">
         <span id="weightOcrCurrentLabel" style="font-size:0.85rem; color:var(--text-muted); white-space:nowrap;">体重</span>
         <input type="text" id="weightOcrValueInput" class="cyber-input" placeholder="数値" style="flex:1; margin:0;">
